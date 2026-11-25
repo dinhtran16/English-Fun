@@ -147,3 +147,7 @@ textarea { resize: vertical; margin: 0.5em 0; }
   align-items: center; gap: 10px; border-radius: 16px; margin: 12px 0; padding: 24px;
 }
 .flashcard.flipped { background: var(--accent-soft); }
+
+.sync { font-size: 0.82rem; color: var(--muted); margin-right: 4px; white-space: nowrap; }
+.sync.error { color: var(--warn); }
+@media (max-width: 600px) { .sync-text { display: none; } }

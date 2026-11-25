@@ -3,7 +3,7 @@ import { ReadingView } from './components/ReadingView'
 import { VocabView } from './components/VocabView'
 import { WritingView } from './components/WritingView'
 import { TOPICS } from './data/passages'
-import { useVocab } from './storage'
+import { useVocab, type SyncStatus } from './storage'
 import type { Skill, Topic } from './types'
 
 type Screen =
@@ -27,6 +27,7 @@ export default function App() {
           ✨ English Fun
         </button>
         <nav className="row">
+          <SyncBadge status={vocab.status} user={vocab.user} />
           <button
             className={screen.name === 'home' ? 'active' : ''}
             onClick={() => setScreen({ name: 'home' })}
@@ -86,5 +87,19 @@ export default function App() {
         {screen.name === 'vocab' && <VocabView vocab={vocab} />}
       </main>
     </div>
+  )
+}
+
+function SyncBadge({ status, user }: { status: SyncStatus; user: string | null }) {
+  const label = {
+    loading: ['⏳', 'Đang kết nối...'],
+    synced: ['☁️', 'Đã đồng bộ'],
+    local: ['💾', 'Chỉ lưu trên máy này'],
+    error: ['⚠️', 'Lỗi đồng bộ, thay đổi sẽ gửi lại lần sau'],
+  }[status]
+  return (
+    <span className={`sync ${status}`} title={user ? `${label[1]} (${user})` : label[1]}>
+      {label[0]} <span className="sync-text">{label[1]}</span>
+    </span>
   )
 }

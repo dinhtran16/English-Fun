@@ -22,6 +22,7 @@ export interface VocabWord {
   example?: string
   topicId?: string
   addedAt: number
+  updatedAt?: number
   practiceCount: number
   lastPracticedAt?: number
 }
