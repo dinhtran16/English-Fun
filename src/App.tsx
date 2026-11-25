@@ -26,16 +26,21 @@ function readLevel(): Level {
   return 'B1'
 }
 
-type Screen =
-  | { name: 'home' }
-  | { name: 'practice'; topic: Topic; skill: Skill; key: number }
-  | { name: 'vocab' }
+type Screen = { name: 'home' } | { name: 'practice' } | { name: 'vocab' }
+
+/** The exercise in progress. It stays mounted while the learner visits other screens. */
+interface Session {
+  topic: Topic
+  skill: Skill
+  key: number
+}
 
 export default function App() {
   const [auth, setAuth] = useState<AuthState>({ kind: 'checking' })
   const user = auth.kind === 'signed-in' ? auth.user : null
   const vocab = useVocab(user)
   const [screen, setScreen] = useState<Screen>({ name: 'home' })
+  const [session, setSession] = useState<Session | null>(null)
   const [topic, setTopic] = useState<Topic | null>(null)
   const [level, setLevel] = useState<Level>(readLevel)
   const settings = useMemo<PracticeSettings>(() => ({ aiEnabled: !!user, level }), [user, level])
@@ -57,6 +62,7 @@ export default function App() {
     await signOut()
     vocab.clearLocal()
     setScreen({ name: 'home' })
+    setSession(null)
     setAuth({ kind: 'signed-out' })
   }
 
@@ -73,7 +79,9 @@ export default function App() {
   }
 
   const start = (skill: Skill) => {
-    if (topic) setScreen({ name: 'practice', topic, skill, key: Date.now() })
+    if (!topic) return
+    setSession({ topic, skill, key: Date.now() })
+    setScreen({ name: 'practice' })
   }
 
   return (
@@ -90,6 +98,14 @@ export default function App() {
           >
             Luyện tập
           </button>
+          {session && (
+            <button
+              className={screen.name === 'practice' ? 'active' : ''}
+              onClick={() => setScreen({ name: 'practice' })}
+            >
+              {session.skill === 'reading' ? '📖' : '✍️'} Bài đang làm
+            </button>
+          )}
           <button
             className={screen.name === 'vocab' ? 'active' : ''}
             onClick={() => setScreen({ name: 'vocab' })}
@@ -160,12 +176,15 @@ export default function App() {
           </section>
         )}
 
-        {screen.name === 'practice' &&
-          (screen.skill === 'reading' ? (
-            <ReadingView key={screen.key} topic={screen.topic} vocab={vocab} settings={settings} />
-          ) : (
-            <WritingView key={screen.key} topic={screen.topic} vocab={vocab} settings={settings} />
-          ))}
+        {session && (
+          <div hidden={screen.name !== 'practice'}>
+            {session.skill === 'reading' ? (
+              <ReadingView key={session.key} topic={session.topic} vocab={vocab} settings={settings} />
+            ) : (
+              <WritingView key={session.key} topic={session.topic} vocab={vocab} settings={settings} />
+            )}
+          </div>
+        )}
 
         {screen.name === 'vocab' && <VocabView vocab={vocab} />}
       </main>
