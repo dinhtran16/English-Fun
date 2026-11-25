@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { checkSession, signOut, type AuthState } from './auth'
 import { AuthScreen } from './components/AuthScreen'
 import { ReadingView } from './components/ReadingView'
@@ -6,7 +6,25 @@ import { VocabView } from './components/VocabView'
 import { WritingView } from './components/WritingView'
 import { TOPICS } from './data/passages'
 import { useVocab, type SyncStatus } from './storage'
-import type { Skill, Topic } from './types'
+import type { Level, PracticeSettings, Skill, Topic } from './types'
+
+const LEVEL_KEY = 'english-fun:level'
+const LEVELS: { id: Level; label: string }[] = [
+  { id: 'A2', label: 'A2 · Sơ cấp' },
+  { id: 'B1', label: 'B1 · Trung cấp' },
+  { id: 'B2', label: 'B2 · Trung cao' },
+  { id: 'C1', label: 'C1 · Nâng cao' },
+]
+
+function readLevel(): Level {
+  try {
+    const v = localStorage.getItem(LEVEL_KEY)
+    if (LEVELS.some((l) => l.id === v)) return v as Level
+  } catch {
+    // ignore
+  }
+  return 'B1'
+}
 
 type Screen =
   | { name: 'home' }
@@ -19,6 +37,17 @@ export default function App() {
   const vocab = useVocab(user)
   const [screen, setScreen] = useState<Screen>({ name: 'home' })
   const [topic, setTopic] = useState<Topic | null>(null)
+  const [level, setLevel] = useState<Level>(readLevel)
+  const settings = useMemo<PracticeSettings>(() => ({ aiEnabled: !!user, level }), [user, level])
+
+  const chooseLevel = (l: Level) => {
+    setLevel(l)
+    try {
+      localStorage.setItem(LEVEL_KEY, l)
+    } catch {
+      // ignore
+    }
+  }
 
   useEffect(() => {
     checkSession().then(setAuth)
@@ -96,7 +125,25 @@ export default function App() {
                 </button>
               ))}
             </div>
-            <h3>2. Chọn kỹ năng</h3>
+            <h3>2. Trình độ</h3>
+            <div className="row levels">
+              {LEVELS.map((l) => (
+                <button
+                  key={l.id}
+                  className={level === l.id ? 'active' : ''}
+                  onClick={() => chooseLevel(l.id)}
+                >
+                  {l.label}
+                </button>
+              ))}
+            </div>
+            {!user && (
+              <p className="hint">
+                Đăng nhập để AI tạo đoạn văn mới theo trình độ và chấm bài viết. Khi chưa đăng nhập, app
+                dùng các bài có sẵn.
+              </p>
+            )}
+            <h3>3. Chọn kỹ năng</h3>
             <div className="grid two">
               <button className="skill" disabled={!topic} onClick={() => start('reading')}>
                 <span className="huge">📖</span>
@@ -115,9 +162,9 @@ export default function App() {
 
         {screen.name === 'practice' &&
           (screen.skill === 'reading' ? (
-            <ReadingView key={screen.key} topic={screen.topic} vocab={vocab} />
+            <ReadingView key={screen.key} topic={screen.topic} vocab={vocab} settings={settings} />
           ) : (
-            <WritingView key={screen.key} topic={screen.topic} vocab={vocab} />
+            <WritingView key={screen.key} topic={screen.topic} vocab={vocab} settings={settings} />
           ))}
 
         {screen.name === 'vocab' && <VocabView vocab={vocab} />}

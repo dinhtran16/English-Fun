@@ -32,7 +32,14 @@ App chạy dưới dạng **Worker có static assets**: Worker phục vụ `/api
 
 - Tên Worker trong dashboard phải trùng với `name` trong `wrangler.jsonc` (hiện là `english-fun`).
 - Build command: `npm run build`. Deploy command: `npx wrangler deploy`. Node 22 (file `.node-version`).
-- **D1 được tạo tự động** ở lần deploy đầu tiên (database `english-fun`, binding `DB`). Các bảng `users`, `sessions`, `vocab_words` được API tự tạo ở lần gọi đầu tiên.
+- **D1 được tạo tự động** ở lần deploy đầu tiên (database `english-fun`, binding `DB`). Các bảng `users`, `sessions`, `vocab_words`, `passages`, `ai_usage` được API tự tạo ở lần gọi đầu tiên.
+
+**AI (DeepSeek)**
+- Khi đã đăng nhập, màn Đọc và Viết dùng DeepSeek để tạo đoạn văn mới theo chủ đề và trình độ (A2-C1). Bài Viết lồng tối đa 5 từ ít luyện nhất trong kho, và AI chấm bài dịch (điểm, lỗi cần sửa, bản đã sửa).
+- Cài key: Worker → **Settings → Variables and Secrets** → **Add** → loại **Secret**, tên `DEEPSEEK_API_KEY`. Không đưa key vào code.
+- Mỗi người dùng được tối đa 50 lượt AI mỗi ngày (đổi bằng biến `AI_DAILY_LIMIT`). Model mặc định `deepseek-chat` (đổi bằng `DEEPSEEK_MODEL`).
+- Chưa có key, hết lượt hoặc AI lỗi thì app tự dùng 13 bài có sẵn.
+- Mọi đoạn văn AI tạo được lưu trong bảng `passages` để tránh lặp chủ đề.
 
 **Tài khoản**
 - Người dùng tự đăng ký bằng tên đăng nhập + mật khẩu ngay trong app. Mật khẩu được băm bằng PBKDF2 (SHA-256, salt riêng cho từng người); phiên đăng nhập là cookie HttpOnly giữ 30 ngày.
@@ -60,6 +67,7 @@ npm run cf:dev   # build rồi chạy wrangler dev với D1 cục bộ, http://l
 | `worker/index.ts` | Cloudflare Worker: định tuyến API và phục vụ app |
 | `worker/auth.ts` | Đăng ký, đăng nhập, đăng xuất, phiên |
 | `worker/vocab.ts` | API kho từ trên D1 |
+| `worker/ai.ts`, `src/ai.ts` | Sinh đoạn văn và chấm bài bằng DeepSeek |
 | `src/auth.ts`, `src/components/AuthScreen.tsx` | Phía app: kiểm tra phiên và màn hình đăng nhập |
 | `wrangler.jsonc` | Cấu hình Worker, static assets và D1 |
 | `src/dictionary.ts` | Tra từ (dictionaryapi.dev, MyMemory) và phát âm (Web Speech API) |

@@ -37,6 +37,18 @@ function rankWords(words: VocabWord[]): VocabWord[] {
   )
 }
 
+/** Up to five words to practise: words already in `preferred` first, then same topic, then the rest. */
+export function pickTargets(
+  bank: VocabWord[],
+  topicId: string,
+  preferred: VocabWord[] = [],
+): VocabWord[] {
+  const others = rankWords(bank).filter((w) => !preferred.includes(w))
+  const sameTopic = others.filter((w) => w.topicId === topicId)
+  const rest = others.filter((w) => w.topicId !== topicId)
+  return [...rankWords(preferred), ...sameTopic, ...rest].slice(0, MAX_TARGETS)
+}
+
 /**
  * Builds a writing exercise for a topic: picks the passage that reuses the most
  * words from the learner's bank, then chooses up to five target words to practise.
@@ -56,14 +68,7 @@ export function buildExercise(
   scored.sort((a, b) => b.hits.length - a.hits.length)
   const { passage, hits } = scored[0]
 
-  const ranked = rankWords(bank)
-  const inPassage = rankWords(hits)
-  const others = ranked.filter((w) => !hits.includes(w))
-  const sameTopic = others.filter((w) => w.topicId === topicId)
-  const rest = others.filter((w) => w.topicId !== topicId)
-
-  const targets = [...inPassage, ...sameTopic, ...rest].slice(0, MAX_TARGETS)
-  return { passage, targets }
+  return { passage: { ...passage, source: 'builtin' }, targets: pickTargets(bank, topicId, hits) }
 }
 
 /** Rough share of the reference's words that appear in the learner's text (0-100). */

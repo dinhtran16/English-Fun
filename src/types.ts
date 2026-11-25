@@ -12,6 +12,15 @@ export interface Passage {
   title: string
   en: string
   vi: string
+  source?: 'ai' | 'builtin'
+}
+
+export type Level = 'A2' | 'B1' | 'B2' | 'C1'
+
+/** What the app needs to know to generate content. */
+export interface PracticeSettings {
+  aiEnabled: boolean
+  level: Level
 }
 
 export interface VocabWord {
