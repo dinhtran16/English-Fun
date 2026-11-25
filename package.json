@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && tsc -p functions && vite build",
-    "cf:dev": "npm run build && wrangler pages dev dist --d1 DB=english-fun-local --binding ALLOW_ANONYMOUS=true",
+    "build": "tsc -b && tsc -p worker && vite build",
+    "cf:dev": "npm run build && wrangler dev --var ALLOW_ANONYMOUS:true",
     "lint": "oxlint",
     "preview": "vite preview"
   },

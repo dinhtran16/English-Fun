@@ -1,5 +1,5 @@
 /**
- * Vocabulary bank API, served by Cloudflare Pages Functions and stored in D1.
+ * Vocabulary bank API, served by the Cloudflare Worker and stored in D1.
  *
  *   GET    /api/vocab              -> { user, words: VocabWord[] }
  *   POST   /api/vocab              body { words: VocabWord[] } -> upserts each word (newest updatedAt wins)
@@ -10,7 +10,8 @@
  * If ALLOWED_EMAILS is set (comma separated), only those emails are accepted.
  */
 
-interface Env {
+export interface Env {
+  ASSETS: Fetcher
   DB: D1Database
   ALLOWED_EMAILS?: string
   ALLOW_ANONYMOUS?: string
@@ -89,7 +90,7 @@ function guard(env: Env): Response | null {
   return null
 }
 
-export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
+async function handleGet(request: Request, env: Env): Promise<Response> {
   const bad = guard(env)
   if (bad) return bad
   const user = userOf(request, env)
@@ -104,7 +105,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   return json({ user, words })
 }
 
-export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
+async function handlePost(request: Request, env: Env): Promise<Response> {
   const bad = guard(env)
   if (bad) return bad
   const user = userOf(request, env)
@@ -138,7 +139,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   return json({ saved: words.length, skipped: body.words.length - words.length })
 }
 
-export const onRequestDelete: PagesFunction<Env> = async ({ request, env }) => {
+async function handleDelete(request: Request, env: Env): Promise<Response> {
   const bad = guard(env)
   if (bad) return bad
   const user = userOf(request, env)
@@ -148,4 +149,17 @@ export const onRequestDelete: PagesFunction<Env> = async ({ request, env }) => {
   await ensureSchema(env.DB)
   await env.DB.prepare('DELETE FROM vocab WHERE user_email = ? AND word = ?').bind(user, word).run()
   return json({ deleted: word })
+}
+
+export async function handleVocab(request: Request, env: Env): Promise<Response> {
+  switch (request.method) {
+    case 'GET':
+      return handleGet(request, env)
+    case 'POST':
+      return handlePost(request, env)
+    case 'DELETE':
+      return handleDelete(request, env)
+    default:
+      return json({ error: 'method_not_allowed' }, 405)
+  }
 }

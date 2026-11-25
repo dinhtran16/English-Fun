@@ -15,7 +15,7 @@
    - Bấm **Kiểm tra** để xem đã dùng đủ từ chưa, so với bản gốc, và lưu thêm từ mới.
 4. **Kho từ**: tìm kiếm, sửa nghĩa, nghe phát âm, xóa, và ôn tập bằng thẻ lật.
 
-Kho từ được lưu trên **Cloudflare D1** qua API `/api/vocab` (thư mục `functions/`), nên dùng chung được giữa các thiết bị. App luôn giữ một bản sao trong trình duyệt: khi không kết nối được server (mạng chập chờn, hoặc chạy `npm run dev`), app vẫn dùng bình thường và gửi các thay đổi lên ở lần đồng bộ sau. Góc trên bên phải cho biết trạng thái: ☁️ đã đồng bộ, 💾 chỉ lưu trên máy này.
+Kho từ được lưu trên **Cloudflare D1** qua API `/api/vocab` (thư mục `worker/`), nên dùng chung được giữa các thiết bị. App luôn giữ một bản sao trong trình duyệt: khi không kết nối được server (mạng chập chờn, hoặc chạy `npm run dev`), app vẫn dùng bình thường và gửi các thay đổi lên ở lần đồng bộ sau. Góc trên bên phải cho biết trạng thái: ☁️ đã đồng bộ, 💾 chỉ lưu trên máy này.
 
 ## Chạy dự án
 
@@ -26,32 +26,25 @@ npm run build    # kiểm tra kiểu và build ra dist/
 npm run lint
 ```
 
-## Cài đặt trên Cloudflare Pages
+## Cài đặt trên Cloudflare Workers
 
-Cài đặt build: build command `npm run build`, output `dist`, Node 22 (đã có file `.node-version`).
+App chạy dưới dạng **Worker có static assets**: Worker phục vụ `/api/vocab` từ D1, mọi đường dẫn khác trả về app trong `dist/`. Cấu hình nằm ở `wrangler.jsonc`.
 
-**1. Tạo cơ sở dữ liệu D1**
-- Cloudflare dashboard → **Storage & Databases** → **D1** → **Create database**, đặt tên `english-fun`.
-- Bảng `vocab` được API tự tạo ở lần gọi đầu tiên, không cần chạy SQL.
+- Tên Worker trong dashboard phải trùng với `name` trong `wrangler.jsonc` (hiện là `english-fun`).
+- Build command: `npm run build`. Deploy command: `npx wrangler deploy`. Node 22 (file `.node-version`).
+- **D1 được tạo tự động** ở lần deploy đầu tiên (database `english-fun`, binding `DB`). Bảng `vocab` được API tự tạo ở lần gọi đầu tiên.
 
-**2. Gắn D1 vào project Pages**
-- **Workers & Pages** → project → **Settings** → **Bindings** → **Add** → **D1 database**.
-- Variable name: `DB`, database: `english-fun`. Làm cho cả Production (và Preview nếu muốn).
-
-**3. Bật đăng nhập bằng Cloudflare Access** (để chỉ bạn đọc/ghi được kho từ)
-- **Zero Trust** → **Access** → **Applications** → **Add an application** → **Self-hosted**.
-- Domain: tên miền `*.pages.dev` của project (ví dụ `english-fun.pages.dev`).
-- Policy: Action **Allow**, Include → **Emails** → email của bạn. Đăng nhập bằng mã gửi qua email (One-time PIN) là đủ.
-- (Tùy chọn) Thêm biến môi trường `ALLOWED_EMAILS` = email của bạn trong **Settings → Variables and Secrets** để API kiểm tra thêm một lớp.
-
-**4. Deploy lại** (Deployments → bản mới nhất → **Retry deployment**) để binding có hiệu lực.
+**Bật đăng nhập bằng Cloudflare Access** (để chỉ bạn đọc/ghi được kho từ)
+- Worker → **Settings** → **Domains & Routes** → dòng `workers.dev` → bật **Cloudflare Access**. Hoặc vào **Zero Trust** → **Access** → **Applications** → **Self-hosted**, domain là link `workers.dev` của Worker.
+- Policy: **Allow**, Include → **Emails** → email của bạn. Đăng nhập bằng mã gửi qua email.
+- (Tùy chọn) Thêm biến `ALLOWED_EMAILS` = email của bạn trong **Settings → Variables and Secrets** để API kiểm tra thêm một lớp.
 
 Nếu thiếu Access, API trả lỗi 401 và app tự chuyển về chế độ 💾 lưu trên máy.
 
 ### Chạy thử với Cloudflare trên máy
 
 ```bash
-npm run cf:dev   # build rồi chạy wrangler với D1 cục bộ, http://localhost:8788
+npm run cf:dev   # build rồi chạy wrangler dev với D1 cục bộ, http://localhost:8787
 ```
 
 ## Cấu trúc
@@ -66,7 +59,8 @@ npm run cf:dev   # build rồi chạy wrangler với D1 cục bộ, http://local
 | `src/components/VocabView.tsx` | Kho từ và ôn tập thẻ |
 | `src/exercise.ts` | Chọn đoạn văn và từ cần luyện cho bài Viết |
 | `src/storage.ts` | Kho từ: đồng bộ với server, bản sao trong trình duyệt |
-| `functions/api/vocab.ts` | API kho từ trên Cloudflare Pages Functions + D1 |
+| `worker/index.ts`, `worker/vocab.ts` | Cloudflare Worker: API kho từ trên D1 và phục vụ app |
+| `wrangler.jsonc` | Cấu hình Worker, static assets và D1 |
 | `src/dictionary.ts` | Tra từ (dictionaryapi.dev, MyMemory) và phát âm (Web Speech API) |
 
 ## Thêm đoạn văn
