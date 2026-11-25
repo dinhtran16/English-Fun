@@ -5,6 +5,7 @@ import { ReadingView } from './components/ReadingView'
 import { VocabView } from './components/VocabView'
 import { WritingView } from './components/WritingView'
 import { TOPICS } from './data/passages'
+import { clearDrafts, useDraft } from './persist'
 import { useVocab, type SyncStatus } from './storage'
 import type { Level, PracticeSettings, Skill, Topic } from './types'
 
@@ -39,8 +40,8 @@ export default function App() {
   const [auth, setAuth] = useState<AuthState>({ kind: 'checking' })
   const user = auth.kind === 'signed-in' ? auth.user : null
   const vocab = useVocab(user)
-  const [screen, setScreen] = useState<Screen>({ name: 'home' })
-  const [session, setSession] = useState<Session | null>(null)
+  const [session, setSession] = useDraft<Session | null>('session', null)
+  const [screen, setScreen] = useState<Screen>(() => ({ name: session ? 'practice' : 'home' }))
   const [topic, setTopic] = useState<Topic | null>(null)
   const [level, setLevel] = useState<Level>(readLevel)
   const settings = useMemo<PracticeSettings>(() => ({ aiEnabled: !!user, level }), [user, level])
@@ -63,6 +64,7 @@ export default function App() {
     vocab.clearLocal()
     setScreen({ name: 'home' })
     setSession(null)
+    clearDrafts()
     setAuth({ kind: 'signed-out' })
   }
 
@@ -80,6 +82,7 @@ export default function App() {
 
   const start = (skill: Skill) => {
     if (!topic) return
+    clearDrafts()
     setSession({ topic, skill, key: Date.now() })
     setScreen({ name: 'practice' })
   }

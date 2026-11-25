@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useDraft } from '../persist'
 import type { LookupResult } from '../dictionary'
 import { normalizeWord } from '../storage'
 
@@ -11,7 +11,7 @@ export interface PendingWord {
 
 /** Holds the words dragged into the panel; each new word is looked up automatically by WordPanel. */
 export function usePendingWords() {
-  const [pending, setPending] = useState<PendingWord[]>([])
+  const [pending, setPending] = useDraft<PendingWord[]>('pending', [])
 
   const addPending = (raw: string) => {
     const word = normalizeWord(raw)

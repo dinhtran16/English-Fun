@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { AiUnavailable, generatePassage } from '../ai'
 import { randomPassage } from '../data/passages'
+import { useDraft } from '../persist'
 import { speak } from '../dictionary'
 import type { VocabStore } from '../storage'
 import type { Passage, PracticeSettings, Topic } from '../types'
@@ -20,13 +21,14 @@ const builtin = (topicId: string, excludeId?: string): Passage => ({
 })
 
 export function ReadingView({ topic, vocab, settings }: Props) {
-  const [passage, setPassage] = useState<Passage | null>(() =>
+  const [passage, setPassage] = useDraft<Passage | null>('reading:passage', () =>
     settings.aiEnabled ? null : builtin(topic.id),
   )
   const [notice, setNotice] = useState('')
-  const [translating, setTranslating] = useState(false)
-  const [translation, setTranslation] = useState('')
-  const [showRef, setShowRef] = useState(false)
+  const [translating, setTranslating] = useDraft('reading:translating', false)
+  const [translation, setTranslation] = useDraft('reading:translation', '')
+  const [showRef, setShowRef] = useDraft('reading:showRef', false)
+  const started = useRef(passage !== null)
   const { pending, setPending, addPending } = usePendingWords()
 
   const load = useCallback(
@@ -46,24 +48,20 @@ export function ReadingView({ topic, vocab, settings }: Props) {
         setPassage(builtin(topic.id, excludeId))
       }
     },
-    [settings.aiEnabled, settings.level, topic],
+    [settings.aiEnabled, settings.level, topic, setPassage, setShowRef, setTranslation],
   )
 
-  // Generate the first passage when the screen opens.
+  // Generate the first passage once, unless one was restored from a draft.
   useEffect(() => {
-    if (!settings.aiEnabled) return
-    let cancelled = false
+    if (started.current) return
+    started.current = true
     generatePassage(topic, 'reading', settings.level)
-      .then((p) => !cancelled && setPassage(p))
+      .then(setPassage)
       .catch((err) => {
-        if (cancelled) return
         setNotice(err instanceof AiUnavailable ? err.message : 'AI gặp lỗi, đang dùng bài có sẵn.')
         setPassage(builtin(topic.id))
       })
-    return () => {
-      cancelled = true
-    }
-  }, [settings.aiEnabled, settings.level, topic])
+  }, [settings.level, topic, setPassage])
 
   if (!passage) {
     return (

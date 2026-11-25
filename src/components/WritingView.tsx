@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { AiUnavailable, generatePassage, gradeTranslation, type Feedback } from '../ai'
 import { buildExercise, containsWord, overlapScore, pickTargets, type WritingExercise } from '../exercise'
+import { useDraft } from '../persist'
 import type { VocabStore } from '../storage'
 import type { PracticeSettings, Topic, VocabWord } from '../types'
 import { PassageText } from './PassageText'
@@ -35,30 +36,32 @@ async function makeExercise(
 }
 
 export function WritingView({ topic, vocab, settings }: Props) {
-  const [exercise, setExercise] = useState<WritingExercise | null>(null)
+  const [exercise, setExercise] = useDraft<WritingExercise | null>('writing:exercise', null)
   const [notice, setNotice] = useState('')
-  const [translation, setTranslation] = useState('')
-  const [ownSentences, setOwnSentences] = useState('')
-  const [checked, setChecked] = useState(false)
-  const [feedback, setFeedback] = useState<Feedback | null>(null)
+  const [translation, setTranslation] = useDraft('writing:translation', '')
+  const [ownSentences, setOwnSentences] = useDraft('writing:own', '')
+  const [checked, setChecked] = useDraft('writing:checked', false)
+  const [feedback, setFeedback] = useDraft<Feedback | null>('writing:feedback', null)
+  const started = useRef(exercise !== null)
   const [grading, setGrading] = useState(false)
   const [gradeError, setGradeError] = useState('')
   const { pending, setPending, addPending } = usePendingWords()
 
-  const show = useCallback((r: { exercise: WritingExercise; notice: string }) => {
-    setExercise(r.exercise)
-    setNotice(r.notice)
-  }, [])
+  const show = useCallback(
+    (r: { exercise: WritingExercise; notice: string }) => {
+      setExercise(r.exercise)
+      setNotice(r.notice)
+    },
+    [setExercise],
+  )
 
-  // Build the first exercise when the screen opens. The bank is read once on purpose:
-  // saving new words while writing must not replace the exercise.
+  // Build the first exercise once, unless one was restored from a draft. The bank is
+  // read once on purpose: saving new words while writing must not replace the exercise.
   const [initialBank] = useState(vocab.words)
   useEffect(() => {
-    let cancelled = false
-    makeExercise(topic, initialBank, settings).then((r) => !cancelled && show(r))
-    return () => {
-      cancelled = true
-    }
+    if (started.current) return
+    started.current = true
+    makeExercise(topic, initialBank, settings).then(show)
   }, [topic, initialBank, settings, show])
 
   const next = async () => {
