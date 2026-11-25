@@ -151,3 +151,9 @@ textarea { resize: vertical; margin: 0.5em 0; }
 .sync { font-size: 0.82rem; color: var(--muted); margin-right: 4px; white-space: nowrap; }
 .sync.error { color: var(--warn); }
 @media (max-width: 600px) { .sync-text { display: none; } }
+
+.auth { max-width: 400px; margin: 6vh auto 0; text-align: center; display: grid; gap: 14px; }
+.auth-form { text-align: left; display: grid; gap: 4px; padding: 20px; }
+.auth-form .primary { margin-top: 8px; }
+.error { color: var(--danger); font-size: 0.9rem; margin: 0.3em 0; }
+.user-chip { font-size: 0.88rem; color: var(--muted); }

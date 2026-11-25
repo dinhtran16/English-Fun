@@ -1,4 +1,6 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { checkSession, signOut, type AuthState } from './auth'
+import { AuthScreen } from './components/AuthScreen'
 import { ReadingView } from './components/ReadingView'
 import { VocabView } from './components/VocabView'
 import { WritingView } from './components/WritingView'
@@ -12,9 +14,34 @@ type Screen =
   | { name: 'vocab' }
 
 export default function App() {
-  const vocab = useVocab()
+  const [auth, setAuth] = useState<AuthState>({ kind: 'checking' })
+  const user = auth.kind === 'signed-in' ? auth.user : null
+  const vocab = useVocab(user)
   const [screen, setScreen] = useState<Screen>({ name: 'home' })
   const [topic, setTopic] = useState<Topic | null>(null)
+
+  useEffect(() => {
+    checkSession().then(setAuth)
+  }, [])
+
+  const logout = async () => {
+    await signOut()
+    vocab.clearLocal()
+    setScreen({ name: 'home' })
+    setAuth({ kind: 'signed-out' })
+  }
+
+  if (auth.kind === 'checking') return <div className="app" />
+  if (auth.kind === 'signed-out') {
+    return (
+      <div className="app">
+        <AuthScreen
+          onSignedIn={(u) => setAuth({ kind: 'signed-in', user: u })}
+          onGuest={() => setAuth({ kind: 'guest' })}
+        />
+      </div>
+    )
+  }
 
   const start = (skill: Skill) => {
     if (topic) setScreen({ name: 'practice', topic, skill, key: Date.now() })
@@ -27,7 +54,7 @@ export default function App() {
           ✨ English Fun
         </button>
         <nav className="row">
-          <SyncBadge status={vocab.status} user={vocab.user} />
+          <SyncBadge status={vocab.status} user={user} />
           <button
             className={screen.name === 'home' ? 'active' : ''}
             onClick={() => setScreen({ name: 'home' })}
@@ -40,6 +67,15 @@ export default function App() {
           >
             Kho từ ({vocab.words.length})
           </button>
+          {user && (
+            <>
+              <span className="user-chip">👤 {user}</span>
+              <button onClick={logout}>Đăng xuất</button>
+            </>
+          )}
+          {auth.kind === 'guest' && (
+            <button onClick={() => setAuth({ kind: 'signed-out' })}>Đăng nhập</button>
+          )}
         </nav>
       </header>
 

@@ -60,10 +60,23 @@ async function api(method: string, init: RequestInit & { query?: string } = {}) 
   return res.json()
 }
 
-export function useVocab() {
+/** `user` is the signed-in username, or null to keep the bank on this device only. */
+export function useVocab(user: string | null) {
   const [words, setWords] = useState<VocabWord[]>(() => read(KEYS.vocab, []))
-  const [status, setStatus] = useState<SyncStatus>('loading')
-  const [user, setUser] = useState<string | null>(null)
+  // The sync status belongs to one user; for anyone else it is derived below.
+  const [sync, setSync] = useState<{ user: string | null; status: SyncStatus }>({
+    user: null,
+    status: 'loading',
+  })
+  const status: SyncStatus = !user ? 'local' : sync.user === user ? sync.status : 'loading'
+  const userRef = useRef(user)
+  useEffect(() => {
+    userRef.current = user
+  }, [user])
+  const setStatus = useCallback(
+    (s: SyncStatus) => setSync({ user: userRef.current, status: s }),
+    [],
+  )
   const wordsRef = useRef(words)
   const statusRef = useRef(status)
   const timer = useRef<number | undefined>(undefined)
@@ -101,16 +114,18 @@ export function useVocab() {
     } catch {
       setStatus('error')
     }
-  }, [])
+  }, [setStatus])
 
   const schedulePush = useCallback(() => {
     window.clearTimeout(timer.current)
     timer.current = window.setTimeout(flush, PUSH_DELAY_MS)
   }, [flush])
 
-  // Initial sync with the server.
+  // Sync with the server whenever the signed-in user changes.
   useEffect(() => {
     let cancelled = false
+    statusRef.current = user ? 'loading' : 'local'
+    if (!user) return
     ;(async () => {
       try {
         const data = (await api('GET')) as { user: string; words: VocabWord[] }
@@ -134,7 +149,6 @@ export function useVocab() {
         wordsRef.current = list
         statusRef.current = 'synced'
         setWords(list)
-        setUser(data.user)
         setStatus('synced')
         if (dirty.size || deleted.size) flush()
       } catch {
@@ -144,7 +158,21 @@ export function useVocab() {
     return () => {
       cancelled = true
     }
-  }, [flush])
+  }, [flush, setStatus, user])
+
+  /** Forgets this device's copy (used on sign-out, so the next person starts clean). */
+  const clearLocal = useCallback(() => {
+    window.clearTimeout(timer.current)
+    Object.values(KEYS).forEach((k) => {
+      try {
+        localStorage.removeItem(k)
+      } catch {
+        // ignore
+      }
+    })
+    wordsRef.current = []
+    setWords([])
+  }, [])
 
   const markDirty = useCallback(
     (list: string[]) => {
@@ -219,7 +247,7 @@ export function useVocab() {
     [markDirty],
   )
 
-  return { words, has, add, update, remove, markPracticed, status, user }
+  return { words, has, add, update, remove, markPracticed, status, clearLocal }
 }
 
 export type VocabStore = ReturnType<typeof useVocab>
