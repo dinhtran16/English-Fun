@@ -247,7 +247,30 @@ export function useVocab(user: string | null) {
     [markDirty],
   )
 
-  return { words, has, add, update, remove, markPracticed, status, clearLocal }
+  /** Records one review of a word (flashcard or typing quiz). */
+  const markReviewed = useCallback(
+    (word: string, right: boolean) => {
+      const now = Date.now()
+      setWords((prev) =>
+        prev.map((w) =>
+          w.word === word
+            ? {
+                ...w,
+                reviewCount: (w.reviewCount ?? 0) + 1,
+                correctCount: (w.correctCount ?? 0) + (right ? 1 : 0),
+                lastReviewedAt: now,
+                lastResult: right ? 'right' : 'wrong',
+                updatedAt: now,
+              }
+            : w,
+        ),
+      )
+      markDirty([word])
+    },
+    [markDirty],
+  )
+
+  return { words, has, add, update, remove, markPracticed, markReviewed, status, clearLocal }
 }
 
 export type VocabStore = ReturnType<typeof useVocab>

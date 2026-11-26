@@ -32,6 +32,13 @@ export interface VocabWord {
   topicId?: string
   addedAt: number
   updatedAt?: number
+  /** Times used in a writing exercise. */
   practiceCount: number
   lastPracticedAt?: number
+  /** Times reviewed (flashcard or typing quiz), and how many of those were right. */
+  reviewCount?: number
+  correctCount?: number
+  lastReviewedAt?: number
+  /** Result of the most recent review, so missed words come back first. */
+  lastResult?: 'right' | 'wrong'
 }
