@@ -1,6 +1,7 @@
-import { useState } from 'react'
-import { authenticate } from '../auth'
+import { useEffect, useState } from 'react'
+import { authenticate, fetchSignupCaptcha } from '../auth'
 import { LogoMark } from './icons'
+import { Turnstile } from './Turnstile'
 
 interface Props {
   onSignedIn: (user: string) => void
@@ -14,6 +15,15 @@ export function AuthScreen({ onSignedIn, onGuest }: Props) {
   const [confirm, setConfirm] = useState('')
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
+  const [siteKey, setSiteKey] = useState<string | null>(null)
+  const [captcha, setCaptcha] = useState('')
+  const [captchaRound, setCaptchaRound] = useState(0)
+
+  useEffect(() => {
+    fetchSignupCaptcha().then(setSiteKey)
+  }, [])
+
+  const needsCaptcha = mode === 'signup' && !!siteKey
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -22,11 +32,20 @@ export function AuthScreen({ onSignedIn, onGuest }: Props) {
       setError('Mật khẩu nhập lại không khớp.')
       return
     }
+    if (needsCaptcha && !captcha) {
+      setError('Hãy hoàn thành bước xác minh bên dưới.')
+      return
+    }
     setBusy(true)
     try {
-      onSignedIn(await authenticate(mode, username, password))
+      onSignedIn(await authenticate(mode, username, password, needsCaptcha ? captcha : undefined))
     } catch (err) {
       setError((err as Error).message)
+      if (needsCaptcha) {
+        // A token works only once, so show a fresh check.
+        setCaptcha('')
+        setCaptchaRound((n) => n + 1)
+      }
     } finally {
       setBusy(false)
     }
@@ -80,6 +99,7 @@ export function AuthScreen({ onSignedIn, onGuest }: Props) {
             />
           </label>
         )}
+        {needsCaptcha && <Turnstile siteKey={siteKey} onToken={setCaptcha} resetKey={captchaRound} />}
         {error && <p className="error">{error}</p>}
         <button className="primary lg" type="submit" disabled={busy}>
           {busy ? 'Đang xử lý...' : mode === 'signin' ? 'Đăng nhập' : 'Tạo tài khoản'}

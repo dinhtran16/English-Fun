@@ -11,6 +11,9 @@ const ERRORS: Record<string, string> = {
   username_taken: 'Tên đăng nhập này đã có người dùng.',
   wrong_credentials: 'Sai tên đăng nhập hoặc mật khẩu.',
   signup_disabled: 'Hiện chưa mở đăng ký tài khoản mới.',
+  captcha_failed: 'Chưa xác minh được bạn là người thật. Hãy làm lại bước xác minh.',
+  rate_limited: 'Bạn thử quá nhiều lần. Hãy đợi một lát rồi thử lại.',
+  locked: 'Tài khoản tạm khoá 15 phút vì nhập sai mật khẩu nhiều lần.',
 }
 
 async function call(path: string, method: string, body?: unknown) {
@@ -37,10 +40,15 @@ export async function checkSession(): Promise<AuthState> {
 }
 
 /** Signs in or up; returns the username, or throws an Error with a Vietnamese message. */
-export async function authenticate(mode: 'signin' | 'signup', username: string, password: string) {
+export async function authenticate(
+  mode: 'signin' | 'signup',
+  username: string,
+  password: string,
+  turnstileToken?: string,
+) {
   let result
   try {
-    result = await call(mode, 'POST', { username, password })
+    result = await call(mode, 'POST', { username, password, turnstileToken })
   } catch {
     throw new Error('Không kết nối được máy chủ. Hãy thử lại.')
   }
@@ -54,5 +62,15 @@ export async function signOut() {
     await call('signout', 'POST')
   } catch {
     // Ignore: the local session is cleared anyway.
+  }
+}
+
+/** The Turnstile site key when the server asks for a captcha on sign-up, else null. */
+export async function fetchSignupCaptcha(): Promise<string | null> {
+  try {
+    const { res, data } = await call('config', 'GET')
+    return res.ok && typeof data?.turnstileSiteKey === 'string' ? data.turnstileSiteKey : null
+  } catch {
+    return null
   }
 }

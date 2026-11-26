@@ -14,6 +14,8 @@ const ERRORS: Record<string, string> = {
   ai_no_balance: 'Tài khoản AI đã hết tiền, đang dùng bài có sẵn.',
   ai_busy: 'AI đang quá tải, đang dùng bài có sẵn. Thử lại sau ít phút.',
   daily_limit: 'Đã hết lượt dùng AI hôm nay, đang dùng bài có sẵn.',
+  new_user_limit: 'Tài khoản mới được dùng AI ít lượt trong ngày đầu và đã hết, đang dùng bài có sẵn.',
+  global_limit: 'Hôm nay ứng dụng đã hết lượt AI chung, đang dùng bài có sẵn. Mai thử lại nhé.',
   not_signed_in: 'Đăng nhập để dùng bài do AI tạo.',
 }
 

@@ -37,7 +37,8 @@ App chạy dưới dạng **Worker có static assets**: Worker phục vụ `/api
 **AI (DeepSeek)**
 - Khi đã đăng nhập, màn Đọc và Viết dùng DeepSeek để tạo đoạn văn mới theo chủ đề và trình độ (A2-C1). Bài Viết lồng tối đa 5 từ ít luyện nhất trong kho, và AI chấm bài dịch (điểm, lỗi cần sửa, bản đã sửa).
 - Cài key: Worker → **Settings → Variables and Secrets** → **Add** → loại **Secret**, tên `DEEPSEEK_API_KEY`. Không đưa key vào code.
-- Mỗi người dùng được tối đa 50 lượt AI mỗi ngày (đổi bằng biến `AI_DAILY_LIMIT`). Model mặc định `deepseek-chat` (đổi bằng `DEEPSEEK_MODEL`).
+- Mỗi người dùng được tối đa 50 lượt AI mỗi ngày (đổi bằng biến `AI_DAILY_LIMIT`); tài khoản mới chỉ được 10 lượt trong 24 giờ đầu (`AI_NEW_USER_LIMIT`). Cả app có trần chung 1000 lượt mỗi ngày (`AI_GLOBAL_DAILY_LIMIT`), nên hoá đơn không thể tăng vọt. Model mặc định `deepseek-chat` (đổi bằng `DEEPSEEK_MODEL`).
+- Nên chỉ nạp ít tiền vào DeepSeek (ví dụ 2-5 USD) để giới hạn thiệt hại nếu key bị lộ.
 - Chưa có key, hết lượt hoặc AI lỗi thì app tự dùng 13 bài có sẵn.
 - Mọi đoạn văn AI tạo được lưu trong bảng `passages` để tránh lặp chủ đề.
 
@@ -45,6 +46,12 @@ App chạy dưới dạng **Worker có static assets**: Worker phục vụ `/api
 - Người dùng tự đăng ký bằng tên đăng nhập + mật khẩu ngay trong app. Mật khẩu được băm bằng PBKDF2 (SHA-256, salt riêng cho từng người); phiên đăng nhập là cookie HttpOnly giữ 30 ngày.
 - Muốn khóa đăng ký sau khi đã tạo tài khoản cho mình: thêm biến `SIGNUP_ENABLED` = `false` trong Worker → **Settings → Variables and Secrets**.
 - Có thể dùng thử không cần tài khoản; khi đó kho từ chỉ lưu trên máy (💾).
+
+**Chống tấn công**
+- Đăng nhập: tối đa 10 lần mỗi phút mỗi IP; tài khoản bị khoá 15 phút sau 10 lần sai mật khẩu. Đăng ký: tối đa 5 tài khoản mỗi giờ mỗi IP.
+- Cloudflare Turnstile (chống bot) ở form đăng ký: tạo widget trong dashboard → **Turnstile → Add widget**, thêm hostname của Worker. Sau đó vào Worker → **Settings → Variables and Secrets**: biến thường `TURNSTILE_SITE_KEY` = site key, và **Secret** `TURNSTILE_SECRET_KEY` = secret key. Chưa có secret thì đăng ký không cần xác minh.
+- Kho từ: chỉ nhận các trường đã biết, có giới hạn độ dài, tối đa 5000 từ mỗi người.
+- Security headers (CSP, chống nhúng iframe, nosniff...) cho trang ở `public/_headers` và cho API ở `worker/http.ts`. Yêu cầu thay đổi dữ liệu từ trang web khác (Origin lạ) bị chặn.
 
 ### Chạy thử với Cloudflare trên máy
 

@@ -344,3 +344,9 @@ button.flashcard.flipped:hover:not(:disabled) { background: var(--accent-soft); 
 .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 .ring { padding: 10px; }
 .ring-inner { width: 100%; height: 100%; border-radius: 50%; background: var(--surface); display: grid; place-items: center; font-size: 1.5rem; font-weight: 750; }
+
+.turnstile {
+  min-height: 65px;
+  display: flex;
+  justify-content: center;
+}

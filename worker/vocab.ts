@@ -20,6 +20,10 @@ interface VocabWord {
   updatedAt?: number
   practiceCount: number
   lastPracticedAt?: number
+  reviewCount?: number
+  correctCount?: number
+  lastReviewedAt?: number
+  lastResult?: 'right' | 'wrong'
 }
 
 interface Row {
@@ -28,23 +32,41 @@ interface Row {
 }
 
 const MAX_WORDS_PER_REQUEST = 500
+const MAX_WORDS_PER_USER = 5000
 
 async function userOf(request: Request, env: Env): Promise<string | Response> {
   return (await currentUser(request, env)) ?? json({ error: 'not_signed_in' }, 401)
 }
 
-function isValidWord(w: unknown): w is VocabWord {
-  if (!w || typeof w !== 'object') return false
+const text = (v: unknown, max: number) => (typeof v === 'string' && v.length <= max ? v : undefined)
+const count = (v: unknown) =>
+  typeof v === 'number' && Number.isFinite(v) && v >= 0 && v <= 1e13 ? Math.floor(v) : undefined
+
+/** Keeps only the known fields, with sane types and lengths; returns null for an invalid word. */
+function cleanWord(w: unknown): VocabWord | null {
+  if (!w || typeof w !== 'object') return null
   const v = w as Record<string, unknown>
-  return (
-    typeof v.word === 'string' &&
-    v.word.length > 0 &&
-    v.word.length <= 64 &&
-    typeof v.meaning === 'string' &&
-    v.meaning.length <= 500 &&
-    typeof v.addedAt === 'number' &&
-    typeof v.practiceCount === 'number'
-  )
+  const word = text(v.word, 64)
+  const meaning = text(v.meaning, 500)
+  const addedAt = count(v.addedAt)
+  if (!word || !word.trim() || meaning === undefined || addedAt === undefined) return null
+  const out: VocabWord = {
+    word,
+    meaning,
+    phonetic: text(v.phonetic, 100),
+    definition: text(v.definition, 1000),
+    example: text(v.example, 1000),
+    topicId: text(v.topicId, 40),
+    addedAt,
+    updatedAt: count(v.updatedAt),
+    practiceCount: count(v.practiceCount) ?? 0,
+    lastPracticedAt: count(v.lastPracticedAt),
+    reviewCount: count(v.reviewCount),
+    correctCount: count(v.correctCount),
+    lastReviewedAt: count(v.lastReviewedAt),
+    lastResult: v.lastResult === 'right' || v.lastResult === 'wrong' ? v.lastResult : undefined,
+  }
+  return out
 }
 
 function guard(env: Env): Response | null {
@@ -81,9 +103,21 @@ async function handlePost(request: Request, env: Env): Promise<Response> {
   }
   if (!Array.isArray(body.words)) return json({ error: 'words_must_be_array' }, 400)
   if (body.words.length > MAX_WORDS_PER_REQUEST) return json({ error: 'too_many_words' }, 413)
-  const words = body.words.filter(isValidWord)
+  let words = body.words.map(cleanWord).filter((w): w is VocabWord => w !== null)
 
   await ensureSchema(env)
+  // Cap the bank size: once full, only words already in it can be updated.
+  const total = await env.DB.prepare('SELECT COUNT(*) AS n FROM vocab_words WHERE username = ?')
+    .bind(user)
+    .first<{ n: number }>()
+  if ((total?.n ?? 0) + words.length > MAX_WORDS_PER_USER) {
+    const { results } = await env.DB.prepare('SELECT word FROM vocab_words WHERE username = ?')
+      .bind(user)
+      .all<{ word: string }>()
+    const existing = new Set(results.map((r) => r.word))
+    let room = MAX_WORDS_PER_USER - existing.size
+    words = words.filter((w) => existing.has(w.word) || room-- > 0)
+  }
   // Upsert; keep whichever copy was edited most recently.
   const stmt = env.DB.prepare(
     `INSERT INTO vocab_words (username, word, data, updated_at) VALUES (?, ?, ?, ?)
@@ -107,7 +141,7 @@ async function handleDelete(request: Request, env: Env): Promise<Response> {
   const user = await userOf(request, env)
   if (user instanceof Response) return user
   const word = new URL(request.url).searchParams.get('word')
-  if (!word) return json({ error: 'missing_word' }, 400)
+  if (!word || word.length > 64) return json({ error: 'missing_word' }, 400)
   await ensureSchema(env)
   await env.DB.prepare('DELETE FROM vocab_words WHERE username = ? AND word = ?').bind(user, word).run()
   return json({ deleted: word })

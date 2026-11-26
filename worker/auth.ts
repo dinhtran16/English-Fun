@@ -5,17 +5,26 @@
  *   POST /api/auth/signin   { username, password } -> { user } and a session cookie
  *   POST /api/auth/signout                          -> clears the session
  *   GET  /api/auth/me                               -> { user } or 401
+ *   GET  /api/auth/config                           -> { turnstileSiteKey } for the sign-up form
  *
  * Passwords are hashed with PBKDF2-SHA256 and a per-user salt. Sessions are random
  * tokens kept in an HttpOnly cookie; only their SHA-256 hash is stored in D1.
+ *
+ * Abuse protection: sign-in and sign-up are rate limited per IP, an account is locked for
+ * 15 minutes after 10 wrong passwords, and sign-up asks for a Turnstile check when configured.
  */
-import { ensureSchema, json, type Env } from './http'
+import { clientIp, ensureSchema, hit, json, peek, tooMany, type Env } from './http'
 
 const COOKIE = 'ef_session'
 const SESSION_DAYS = 30
 const PBKDF2_ITERATIONS = 100_000 // the maximum Workers allows
 const USERNAME_RE = /^[a-z0-9_.-]{3,32}$/
 const MIN_PASSWORD = 8
+const SIGNIN_PER_IP_PER_MINUTE = 10
+const SIGNUP_PER_IP_PER_HOUR = 5
+const FAILS_BEFORE_LOCK = 10
+const LOCK_SECONDS = 15 * 60
+const TURNSTILE_VERIFY = 'https://challenges.cloudflare.com/turnstile/v0/siteverify'
 
 const enc = new TextEncoder()
 
@@ -86,8 +95,14 @@ export async function currentUser(request: Request, env: Env): Promise<string | 
   return row.username
 }
 
-async function readCredentials(request: Request): Promise<{ username: string; password: string } | Response> {
-  let body: { username?: unknown; password?: unknown }
+interface Credentials {
+  username: string
+  password: string
+  turnstileToken?: string
+}
+
+async function readCredentials(request: Request): Promise<Credentials | Response> {
+  let body: { username?: unknown; password?: unknown; turnstileToken?: unknown }
   try {
     body = await request.json()
   } catch {
@@ -96,7 +111,29 @@ async function readCredentials(request: Request): Promise<{ username: string; pa
   if (typeof body.username !== 'string' || typeof body.password !== 'string') {
     return json({ error: 'missing_fields' }, 400)
   }
-  return { username: body.username.trim().toLowerCase(), password: body.password }
+  if (body.username.length > 64 || body.password.length > 200) return json({ error: 'wrong_credentials' }, 400)
+  return {
+    username: body.username.trim().toLowerCase(),
+    password: body.password,
+    turnstileToken: typeof body.turnstileToken === 'string' ? body.turnstileToken.slice(0, 2048) : undefined,
+  }
+}
+
+/** True when Turnstile is not configured, or Cloudflare confirms the token is from a real visitor. */
+async function passesTurnstile(request: Request, env: Env, token: string | undefined): Promise<boolean> {
+  if (!env.TURNSTILE_SECRET_KEY) return true
+  if (!token) return false
+  const form = new FormData()
+  form.append('secret', env.TURNSTILE_SECRET_KEY)
+  form.append('response', token)
+  form.append('remoteip', clientIp(request))
+  try {
+    const res = await fetch(env.TURNSTILE_VERIFY_URL ?? TURNSTILE_VERIFY, { method: 'POST', body: form })
+    const data = (await res.json()) as { success?: boolean }
+    return data.success === true
+  } catch {
+    return false
+  }
 }
 
 async function signup(request: Request, env: Env): Promise<Response> {
@@ -106,8 +143,9 @@ async function signup(request: Request, env: Env): Promise<Response> {
   const { username, password } = creds
   if (!USERNAME_RE.test(username)) return json({ error: 'invalid_username' }, 400)
   if (password.length < MIN_PASSWORD || password.length > 200) return json({ error: 'weak_password' }, 400)
+  if (!(await passesTurnstile(request, env, creds.turnstileToken))) return json({ error: 'captcha_failed' }, 400)
+  if (!(await hit(env, `signup-ip:${clientIp(request)}`, SIGNUP_PER_IP_PER_HOUR, 3600))) return tooMany()
 
-  await ensureSchema(env)
   const exists = await env.DB.prepare('SELECT 1 FROM users WHERE username = ?').bind(username).first()
   if (exists) return json({ error: 'username_taken' }, 409)
 
@@ -121,13 +159,18 @@ async function signup(request: Request, env: Env): Promise<Response> {
 async function signin(request: Request, env: Env): Promise<Response> {
   const creds = await readCredentials(request)
   if (creds instanceof Response) return creds
-  await ensureSchema(env)
+  if (!(await hit(env, `signin-ip:${clientIp(request)}`, SIGNIN_PER_IP_PER_MINUTE, 60))) return tooMany()
+  const failKey = `signin-fail:${creds.username}`
+  if ((await peek(env, failKey, LOCK_SECONDS)) >= FAILS_BEFORE_LOCK) return json({ error: 'locked' }, 429)
   const user = await env.DB.prepare('SELECT password_hash, salt FROM users WHERE username = ?')
     .bind(creds.username)
     .first<{ password_hash: string; salt: string }>()
   // Hash even when the user does not exist, so timing does not reveal which usernames exist.
   const hash = await hashPassword(creds.password, user?.salt ?? 'no-such-user')
-  if (!user || !safeEqual(hash, user.password_hash)) return json({ error: 'wrong_credentials' }, 401)
+  if (!user || !safeEqual(hash, user.password_hash)) {
+    await hit(env, failKey, FAILS_BEFORE_LOCK, LOCK_SECONDS)
+    return json({ error: 'wrong_credentials' }, 401)
+  }
   return startSession(request, env, creds.username)
 }
 
@@ -144,6 +187,9 @@ export async function handleAuth(request: Request, env: Env, action: string): Pr
   if (action === 'me' && request.method === 'GET') {
     const user = await currentUser(request, env)
     return user ? json({ user }) : json({ error: 'not_signed_in' }, 401)
+  }
+  if (action === 'config' && request.method === 'GET') {
+    return json({ turnstileSiteKey: env.TURNSTILE_SECRET_KEY ? (env.TURNSTILE_SITE_KEY ?? null) : null })
   }
   if (request.method !== 'POST') return json({ error: 'method_not_allowed' }, 405)
   if (action === 'signup') return signup(request, env)

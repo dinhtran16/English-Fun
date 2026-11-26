@@ -14,6 +14,9 @@ import { ensureSchema, json, type Env } from './http'
 const DEFAULT_BASE_URL = 'https://api.deepseek.com'
 const DEFAULT_MODEL = 'deepseek-chat'
 const DEFAULT_DAILY_LIMIT = 50
+const DEFAULT_NEW_USER_LIMIT = 10
+const DEFAULT_GLOBAL_DAILY_LIMIT = 1000
+const GLOBAL = '*' // ai_usage row that counts every user's calls together
 const LEVELS = ['A2', 'B1', 'B2', 'C1'] as const
 const LENGTH_BY_LEVEL: Record<string, string> = {
   A2: '60-80 words, short simple sentences, everyday vocabulary',
@@ -75,18 +78,33 @@ async function chatJson<T>(env: Env, messages: ChatMessage[], maxTokens: number)
 
 const today = () => new Date().toISOString().slice(0, 10)
 
-/** Reserves one AI call for the user; returns how many remain today, or throws when over the limit. */
-async function takeQuota(env: Env, user: string): Promise<number> {
-  const limit = Number(env.AI_DAILY_LIMIT) || DEFAULT_DAILY_LIMIT
+async function bump(env: Env, key: string): Promise<number> {
   const row = await env.DB.prepare(
     `INSERT INTO ai_usage (username, day, count) VALUES (?, ?, 1)
      ON CONFLICT (username, day) DO UPDATE SET count = count + 1
      RETURNING count`,
   )
-    .bind(user, today())
+    .bind(key, today())
     .first<{ count: number }>()
-  const used = row?.count ?? 1
-  if (used > limit) throw new AiError('daily_limit', 429)
+  return row?.count ?? 1
+}
+
+/**
+ * Reserves one AI call; returns how many the user has left today, or throws when over a limit.
+ * New accounts (first 24 hours) get a smaller allowance, and the whole app has a daily cap.
+ */
+async function takeQuota(env: Env, user: string): Promise<number> {
+  const account = await env.DB.prepare('SELECT created_at FROM users WHERE username = ?')
+    .bind(user)
+    .first<{ created_at: number }>()
+  const isNew = !account || Date.now() - account.created_at < 24 * 3600 * 1000
+  const limit = isNew
+    ? Number(env.AI_NEW_USER_LIMIT) || DEFAULT_NEW_USER_LIMIT
+    : Number(env.AI_DAILY_LIMIT) || DEFAULT_DAILY_LIMIT
+  const used = await bump(env, user)
+  if (used > limit) throw new AiError(isNew ? 'new_user_limit' : 'daily_limit', 429)
+  const globalLimit = Number(env.AI_GLOBAL_DAILY_LIMIT) || DEFAULT_GLOBAL_DAILY_LIMIT
+  if ((await bump(env, GLOBAL)) > globalLimit) throw new AiError('global_limit', 429)
   return limit - used
 }
 
