@@ -18,6 +18,8 @@ export interface Env {
   TURNSTILE_SITE_KEY?: string
   TURNSTILE_SECRET_KEY?: string
   TURNSTILE_VERIFY_URL?: string
+  /** The site's main address, e.g. https://hoctienganh.app. Used in canonical links and the sitemap; defaults to the address in use. */
+  SITE_URL?: string
 }
 
 /** Sent with every API response. Static files get the same set from public/_headers. */

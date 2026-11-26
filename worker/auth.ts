@@ -15,7 +15,7 @@
  */
 import { clientIp, ensureSchema, hit, json, peek, tooMany, type Env } from './http'
 
-const COOKIE = 'ef_session'
+export const COOKIE = 'ef_session'
 const SESSION_DAYS = 30
 const PBKDF2_ITERATIONS = 100_000 // the maximum Workers allows
 const USERNAME_RE = /^[a-z0-9_.-]{3,32}$/
@@ -58,7 +58,7 @@ function safeEqual(a: string, b: string): boolean {
   return diff === 0
 }
 
-function readCookie(request: Request, name: string): string | null {
+export function readCookie(request: Request, name: string): string | null {
   const header = request.headers.get('cookie') ?? ''
   for (const part of header.split(';')) {
     const [k, ...v] = part.trim().split('=')

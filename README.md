@@ -78,6 +78,17 @@ npm run cf:dev   # build rồi chạy wrangler dev với D1 cục bộ, http://l
 | `src/auth.ts`, `src/components/AuthScreen.tsx` | Phía app: kiểm tra phiên và màn hình đăng nhập |
 | `wrangler.jsonc` | Cấu hình Worker, static assets và D1 |
 | `src/dictionary.ts` | Tra từ (dictionaryapi.dev, MyMemory) và phát âm (Web Speech API) |
+| `app/index.html` | Trang của app, chạy ở `/app/` |
+| `site/` | Trang công khai cho SEO: trang chủ, chủ đề từ vựng, blog, robots.txt, sitemap.xml |
+| `worker/site.ts` | Điền địa chỉ trang vào canonical, Open Graph, sitemap; chuyển người đã đăng nhập từ `/` sang `/app/` |
+
+## SEO và trang công khai
+
+- `/` là trang giới thiệu, `/chu-de/...` là trang từ vựng theo chủ đề, `/blog/...` là bài viết. Các trang này là HTML tĩnh được tạo lúc build từ `site/` (plugin `site-pages` trong `vite.config.ts`), nên Google đọc được ngay mà không cần chạy JavaScript.
+- App nằm ở `/app/`. Nút "Dùng thử" mở `/app/?guest=1`, có thể kèm `&topic=travel&skill=reading` để vào thẳng bài. Khách dùng thử chỉ dùng bài có sẵn, không gọi AI.
+- Địa chỉ trang (canonical, `og:url`, sitemap) lấy theo biến `SITE_URL` của Worker, ví dụ `https://hoctienganh.app`. Nếu không đặt thì dùng địa chỉ đang truy cập. Khi đặt `SITE_URL`, các địa chỉ khác (như `*.workers.dev`) trả về `X-Robots-Tag: noindex` để Google chỉ index tên miền chính.
+- Thêm bài blog: thêm một mục vào `POSTS` trong `site/content/posts.ts`. Thêm chủ đề: `site/content/topics.ts`. Sitemap tự cập nhật.
+- Ảnh chụp màn hình và ảnh chia sẻ nằm trong `public/img/`.
 
 ## Thêm đoạn văn
 
