@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { authenticate } from '../auth'
+import { LogoMark } from './icons'
 
 interface Props {
   onSignedIn: (user: string) => void
@@ -38,8 +39,13 @@ export function AuthScreen({ onSignedIn, onGuest }: Props) {
 
   return (
     <section className="auth">
-      <h1>✨ English Fun</h1>
-      <p className="muted">Luyện đọc, viết tiếng Anh và xây kho từ vựng của riêng bạn.</p>
+      <div className="auth-brand">
+        <LogoMark />
+        <div>
+          <h1>English Fun</h1>
+          <p>Luyện đọc, viết và xây kho từ vựng của riêng bạn</p>
+        </div>
+      </div>
       <form className="card auth-form" onSubmit={submit}>
         <h2>{mode === 'signin' ? 'Đăng nhập' : 'Tạo tài khoản'}</h2>
         <label className="field">
@@ -75,19 +81,23 @@ export function AuthScreen({ onSignedIn, onGuest }: Props) {
           </label>
         )}
         {error && <p className="error">{error}</p>}
-        <button className="primary" type="submit" disabled={busy}>
-          {busy ? 'Đang xử lý...' : mode === 'signin' ? 'Đăng nhập' : 'Đăng ký'}
+        <button className="primary lg" type="submit" disabled={busy}>
+          {busy ? 'Đang xử lý...' : mode === 'signin' ? 'Đăng nhập' : 'Tạo tài khoản'}
         </button>
-        <p className="small">
+        <p className="auth-foot">
           {mode === 'signin' ? 'Chưa có tài khoản?' : 'Đã có tài khoản?'}{' '}
           <button type="button" className="link" onClick={switchMode}>
             {mode === 'signin' ? 'Đăng ký' : 'Đăng nhập'}
           </button>
         </p>
       </form>
-      <button className="link" onClick={onGuest}>
-        Dùng thử không cần tài khoản (kho từ chỉ lưu trên máy này)
+      <div className="divider">hoặc</div>
+      <button className="ghost" onClick={onGuest}>
+        Dùng thử không cần tài khoản
       </button>
+      <p className="hint" style={{ textAlign: 'center', marginTop: -12 }}>
+        Kho từ khi dùng thử chỉ lưu trên máy này.
+      </p>
     </section>
   )
 }

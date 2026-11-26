@@ -2,10 +2,10 @@ import type { VocabWord } from './types'
 
 export type ReviewMode = 'flashcard' | 'write-en' | 'write-vi'
 
-export const REVIEW_MODES: { id: ReviewMode; icon: string; name: string; hint: string }[] = [
-  { id: 'flashcard', icon: '🃏', name: 'Lật thẻ', hint: 'Xem từ, nhớ nghĩa rồi lật thẻ kiểm tra' },
-  { id: 'write-en', icon: '🇬🇧', name: 'Viết tiếng Anh', hint: 'Xem nghĩa tiếng Việt, gõ từ tiếng Anh' },
-  { id: 'write-vi', icon: '🇻🇳', name: 'Viết tiếng Việt', hint: 'Xem từ tiếng Anh, gõ nghĩa tiếng Việt' },
+export const REVIEW_MODES: { id: ReviewMode; name: string; hint: string }[] = [
+  { id: 'flashcard', name: 'Lật thẻ', hint: 'Xem từ, nhớ nghĩa rồi lật thẻ kiểm tra' },
+  { id: 'write-en', name: 'Viết tiếng Anh', hint: 'Xem nghĩa tiếng Việt, gõ từ tiếng Anh' },
+  { id: 'write-vi', name: 'Viết tiếng Việt', hint: 'Xem từ tiếng Anh, gõ nghĩa tiếng Việt' },
 ]
 
 /** Missed words first, then never-reviewed, then the ones reviewed longest ago. */

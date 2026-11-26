@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { checkSession, signOut, type AuthState } from './auth'
+import { ArrowRight, BookOpen, Library, LogIn, LogOut, PenLine } from 'lucide-react'
 import { AuthScreen } from './components/AuthScreen'
+import { LogoMark, TopicIcon } from './components/icons'
 import { ReadingView } from './components/ReadingView'
 import { VocabView } from './components/VocabView'
 import { WritingView } from './components/WritingView'
@@ -11,10 +13,10 @@ import type { Level, PracticeSettings, Skill, Topic } from './types'
 
 const LEVEL_KEY = 'english-fun:level'
 const LEVELS: { id: Level; label: string }[] = [
-  { id: 'A2', label: 'A2 · Sơ cấp' },
-  { id: 'B1', label: 'B1 · Trung cấp' },
-  { id: 'B2', label: 'B2 · Trung cao' },
-  { id: 'C1', label: 'C1 · Nâng cao' },
+  { id: 'A2', label: 'Sơ cấp' },
+  { id: 'B1', label: 'Trung cấp' },
+  { id: 'B2', label: 'Trung cao' },
+  { id: 'C1', label: 'Nâng cao' },
 ]
 
 function readLevel(): Level {
@@ -71,7 +73,7 @@ export default function App() {
   if (auth.kind === 'checking') return <div className="app" />
   if (auth.kind === 'signed-out') {
     return (
-      <div className="app">
+      <div className="app auth-wrap">
         <AuthScreen
           onSignedIn={(u) => setAuth({ kind: 'signed-in', user: u })}
           onGuest={() => setAuth({ kind: 'guest' })}
@@ -87,95 +89,148 @@ export default function App() {
     setScreen({ name: 'practice' })
   }
 
+  const toReview = vocab.words.filter((w) => !w.reviewCount || w.lastResult === 'wrong').length
+
   return (
     <div className="app">
       <header className="topbar">
-        <button className="brand" onClick={() => setScreen({ name: 'home' })}>
-          ✨ English Fun
-        </button>
-        <nav className="row">
-          <SyncBadge status={vocab.status} user={user} />
-          <button
-            className={screen.name === 'home' ? 'active' : ''}
-            onClick={() => setScreen({ name: 'home' })}
-          >
-            Luyện tập
+        <div className="container topbar-inner">
+          <button className="brand" onClick={() => setScreen({ name: 'home' })}>
+            <LogoMark />
+            <span className="brand-name">English Fun</span>
           </button>
-          {session && (
+          <nav className="tabs">
             <button
-              className={screen.name === 'practice' ? 'active' : ''}
-              onClick={() => setScreen({ name: 'practice' })}
+              className={`tab ${screen.name === 'home' ? 'active' : ''}`}
+              onClick={() => setScreen({ name: 'home' })}
             >
-              {session.skill === 'reading' ? '📖' : '✍️'} Bài đang làm
+              Luyện tập
             </button>
-          )}
-          <button
-            className={screen.name === 'vocab' ? 'active' : ''}
-            onClick={() => setScreen({ name: 'vocab' })}
-          >
-            Kho từ ({vocab.words.length})
-          </button>
-          {user && (
-            <>
-              <span className="user-chip">👤 {user}</span>
-              <button onClick={logout}>Đăng xuất</button>
-            </>
-          )}
-          {auth.kind === 'guest' && (
-            <button onClick={() => setAuth({ kind: 'signed-out' })}>Đăng nhập</button>
-          )}
-        </nav>
+            {session && (
+              <button
+                className={`tab ${screen.name === 'practice' ? 'active' : ''}`}
+                onClick={() => setScreen({ name: 'practice' })}
+              >
+                {session.skill === 'reading' ? <BookOpen size={15} /> : <PenLine size={15} />}
+                Bài đang làm
+              </button>
+            )}
+            <button
+              className={`tab ${screen.name === 'vocab' ? 'active' : ''}`}
+              onClick={() => setScreen({ name: 'vocab' })}
+            >
+              Kho từ <span className="count">{vocab.words.length}</span>
+            </button>
+          </nav>
+          <div className="topbar-right">
+            <SyncBadge status={vocab.status} user={user} />
+            {user && (
+              <div className="user-menu">
+                <span className="avatar" title={user}>
+                  {user.slice(0, 1)}
+                </span>
+                <span className="user-name">{user}</span>
+                <button className="icon" onClick={logout} title="Đăng xuất" aria-label="Đăng xuất">
+                  <LogOut size={16} />
+                </button>
+              </div>
+            )}
+            {auth.kind === 'guest' && (
+              <button className="small" onClick={() => setAuth({ kind: 'signed-out' })}>
+                <LogIn size={15} /> Đăng nhập
+              </button>
+            )}
+          </div>
+        </div>
       </header>
 
-      <main>
+      <main className="container">
         {screen.name === 'home' && (
           <section className="main home">
-            <h1>Hôm nay bạn muốn luyện gì?</h1>
-            <h3>1. Chọn chủ đề</h3>
-            <div className="grid">
-              {TOPICS.map((t) => (
-                <button
-                  key={t.id}
-                  className={`topic ${topic?.id === t.id ? 'selected' : ''}`}
-                  onClick={() => setTopic(t)}
-                >
-                  <span className="huge">{t.emoji}</span>
-                  {t.name}
+            <div className="page-head">
+              <div>
+                <h1>{user ? `Chào ${user}, hôm nay luyện gì?` : 'Hôm nay bạn muốn luyện gì?'}</h1>
+                <p>
+                  {vocab.words.length > 0
+                    ? `Kho từ có ${vocab.words.length} từ${toReview ? `, ${toReview} từ đang chờ ôn` : ''}.`
+                    : 'Chọn chủ đề và kỹ năng để bắt đầu. Từ mới bạn lưu sẽ vào kho từ.'}
+                </p>
+              </div>
+              {toReview > 0 && (
+                <button onClick={() => setScreen({ name: 'vocab' })}>
+                  <Library size={16} /> Ôn {toReview} từ
                 </button>
-              ))}
+              )}
             </div>
-            <h3>2. Trình độ</h3>
-            <div className="row levels">
-              {LEVELS.map((l) => (
-                <button
-                  key={l.id}
-                  className={level === l.id ? 'active' : ''}
-                  onClick={() => chooseLevel(l.id)}
-                >
-                  {l.label}
+
+            <div className="section">
+              <div className="eyebrow">Chủ đề</div>
+              <div className="topic-grid">
+                {TOPICS.map((t) => (
+                  <button
+                    key={t.id}
+                    className={`topic-card ${topic?.id === t.id ? 'selected' : ''}`}
+                    onClick={() => setTopic(t)}
+                    aria-pressed={topic?.id === t.id}
+                  >
+                    <span className="topic-icon">
+                      <TopicIcon id={t.id} />
+                    </span>
+                    {t.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="section">
+              <div className="eyebrow">Trình độ</div>
+              <div className="segmented" role="radiogroup">
+                {LEVELS.map((l) => (
+                  <button
+                    key={l.id}
+                    className={level === l.id ? 'active' : ''}
+                    onClick={() => chooseLevel(l.id)}
+                    role="radio"
+                    aria-checked={level === l.id}
+                  >
+                    {l.id} <span className="sub">{l.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="section">
+              <div className="eyebrow">Kỹ năng</div>
+              <div className="skill-grid">
+                <button className="skill-card" disabled={!topic} onClick={() => start('reading')}>
+                  <span className="skill-icon">
+                    <BookOpen size={22} />
+                  </span>
+                  <span className="skill-body">
+                    <span className="skill-title">Đọc hiểu</span>
+                    <span className="skill-desc">Đọc một đoạn văn mới, lưu từ chưa biết vào kho</span>
+                  </span>
+                  <ArrowRight size={18} className="go" />
                 </button>
-              ))}
+                <button className="skill-card" disabled={!topic} onClick={() => start('writing')}>
+                  <span className="skill-icon">
+                    <PenLine size={22} />
+                  </span>
+                  <span className="skill-body">
+                    <span className="skill-title">Viết và dịch</span>
+                    <span className="skill-desc">Dịch sang tiếng Anh, luyện dùng từ trong kho</span>
+                  </span>
+                  <ArrowRight size={18} className="go" />
+                </button>
+              </div>
+              {!topic && <p className="hint" style={{ marginTop: 10 }}>Chọn một chủ đề để bắt đầu.</p>}
+              {!user && (
+                <div className="callout info" style={{ marginTop: 14 }}>
+                  Đăng nhập để AI tạo đoạn văn mới theo trình độ và chấm bài viết. Khi chưa đăng nhập, app dùng
+                  các bài có sẵn.
+                </div>
+              )}
             </div>
-            {!user && (
-              <p className="hint">
-                Đăng nhập để AI tạo đoạn văn mới theo trình độ và chấm bài viết. Khi chưa đăng nhập, app
-                dùng các bài có sẵn.
-              </p>
-            )}
-            <h3>3. Chọn kỹ năng</h3>
-            <div className="grid two">
-              <button className="skill" disabled={!topic} onClick={() => start('reading')}>
-                <span className="huge">📖</span>
-                <b>Đọc</b>
-                <span className="muted">Đọc một đoạn văn ngẫu nhiên, lưu từ mới vào kho</span>
-              </button>
-              <button className="skill" disabled={!topic} onClick={() => start('writing')}>
-                <span className="huge">✍️</span>
-                <b>Viết</b>
-                <span className="muted">Dịch sang tiếng Anh, luyện dùng từ trong kho</span>
-              </button>
-            </div>
-            {!topic && <p className="hint">Hãy chọn một chủ đề trước.</p>}
           </section>
         )}
 
@@ -197,14 +252,15 @@ export default function App() {
 
 function SyncBadge({ status, user }: { status: SyncStatus; user: string | null }) {
   const label = {
-    loading: ['⏳', 'Đang kết nối...'],
-    synced: ['☁️', 'Đã đồng bộ'],
-    local: ['💾', 'Chỉ lưu trên máy này'],
-    error: ['⚠️', 'Lỗi đồng bộ, thay đổi sẽ gửi lại lần sau'],
+    loading: 'Đang kết nối...',
+    synced: 'Đã đồng bộ',
+    local: 'Lưu trên máy này',
+    error: 'Lỗi đồng bộ, sẽ thử lại',
   }[status]
   return (
-    <span className={`sync ${status}`} title={user ? `${label[1]} (${user})` : label[1]}>
-      {label[0]} <span className="sync-text">{label[1]}</span>
+    <span className={`sync ${status}`} title={user ? `${label} (${user})` : label}>
+      <span className="dot" />
+      <span className="sync-text">{label}</span>
     </span>
   )
 }

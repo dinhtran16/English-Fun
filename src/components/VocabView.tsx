@@ -1,3 +1,14 @@
+import {
+  ChevronUp,
+  Layers,
+  Library,
+  Search,
+  Trash2,
+  Type,
+  Volume2,
+  Languages,
+  type LucideIcon,
+} from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { TOPICS } from '../data/passages'
 import { speak } from '../dictionary'
@@ -32,6 +43,12 @@ function sortWords(list: VocabWord[], sort: Sort): VocabWord[] {
 }
 
 const SESSION_SIZES = [10, 20, 0] // 0 = all
+
+const MODE_ICONS: Record<ReviewMode, LucideIcon> = {
+  flashcard: Layers,
+  'write-en': Type,
+  'write-vi': Languages,
+}
 
 export function VocabView({ vocab }: Props) {
   const [query, setQuery] = useState('')
@@ -76,93 +93,147 @@ export function VocabView({ vocab }: Props) {
     )
   }
 
+  const mastered = vocab.words.filter((w) => (w.reviewCount ?? 0) >= 3 && accuracy(w) >= 0.8).length
+
   return (
     <section className="main">
-      <h2>📚 Kho từ vựng</h2>
-      <p className="muted small">
-        {vocab.words.length} từ · đã ôn tổng cộng {totalReviews} lượt
-        {missedCount > 0 && ` · ${missedCount} từ trả lời sai lần gần nhất`}
-      </p>
+      <div className="page-head">
+        <div>
+          <h1>Kho từ vựng</h1>
+          <p>Ôn tập thường xuyên để nhớ lâu. Từ trả lời sai sẽ được hỏi lại trước.</p>
+        </div>
+      </div>
 
       {vocab.words.length === 0 ? (
-        <p className="muted">Chưa có từ nào. Vào phần Đọc và kéo từ mới vào bảng để bắt đầu.</p>
+        <div className="card empty">
+          <Library size={28} />
+          <b>Chưa có từ nào</b>
+          <span>Vào phần Đọc hiểu, bấm vào từ chưa biết để lưu vào kho.</span>
+        </div>
       ) : (
-        <div className="review-start">
-          <div className="row space">
-            <strong>Ôn tập</strong>
-            <span className="row small">
-              Số từ:
-              {SESSION_SIZES.map((n) => (
-                <button
-                  key={n}
-                  className={`mini ${size === n ? 'active' : ''}`}
-                  onClick={() => setSize(n)}
-                >
-                  {n || 'Tất cả'}
-                </button>
+        <>
+          <div className="stats">
+            <div className="card stat">
+              <div className="label">Tổng số từ</div>
+              <div className="value">{vocab.words.length}</div>
+            </div>
+            <div className="card stat">
+              <div className="label">Đã thuộc</div>
+              <div className="value">{mastered}</div>
+            </div>
+            <div className="card stat">
+              <div className="label">Cần ôn lại</div>
+              <div className="value">{missedCount}</div>
+            </div>
+            <div className="card stat">
+              <div className="label">Lượt ôn tập</div>
+              <div className="value">{totalReviews}</div>
+            </div>
+          </div>
+
+          <div className="section">
+            <div className="row space" style={{ marginBottom: 10 }}>
+              <span className="eyebrow" style={{ margin: 0 }}>
+                Ôn tập
+              </span>
+              <div className="segmented" role="radiogroup" aria-label="Số từ mỗi lượt">
+                {SESSION_SIZES.map((n) => (
+                  <button
+                    key={n}
+                    className={size === n ? 'active' : ''}
+                    onClick={() => setSize(n)}
+                    role="radio"
+                    aria-checked={size === n}
+                  >
+                    {n ? `${n} từ` : 'Tất cả'}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="mode-grid">
+              {REVIEW_MODES.map((m) => {
+                const Icon = MODE_ICONS[m.id]
+                return (
+                  <button key={m.id} className="mode-card" onClick={() => start(m.id)}>
+                    <span className="mode-icon">
+                      <Icon size={18} />
+                    </span>
+                    <span className="t">{m.name}</span>
+                    <span className="d">{m.hint}</span>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+
+          <div className="eyebrow">Danh sách từ</div>
+          <div className="list-tools">
+            <div className="search">
+              <Search size={16} />
+              <input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Tìm từ hoặc nghĩa..."
+              />
+            </div>
+            <select value={sort} onChange={(e) => setSort(e.target.value as Sort)} aria-label="Sắp xếp">
+              {SORTS.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.label}
+                </option>
               ))}
-            </span>
+            </select>
           </div>
-          <div className="grid modes">
-            {REVIEW_MODES.map((m) => (
-              <button key={m.id} className="mode" onClick={() => start(m.id)}>
-                <span className="big">
-                  {m.icon} {m.name}
-                </span>
-                <span className="small muted">{m.hint}</span>
-              </button>
-            ))}
-          </div>
-          <p className="hint">Ưu tiên từ trả lời sai lần trước, rồi đến từ chưa ôn và từ lâu chưa ôn.</p>
-        </div>
-      )}
 
-      {vocab.words.length > 0 && (
-        <div className="row list-tools">
-          <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Tìm từ hoặc nghĩa..."
-          />
-          <select value={sort} onChange={(e) => setSort(e.target.value as Sort)} aria-label="Sắp xếp">
-            {SORTS.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.label}
-              </option>
-            ))}
-          </select>
-        </div>
+          <ul className="card word-rows">
+            {list.map((w) =>
+              open === w.word ? (
+                <WordDetail key={w.word} w={w} vocab={vocab} onClose={() => setOpen(null)} />
+              ) : (
+                <li key={w.word} className="word-row" onClick={() => setOpen(w.word)}>
+                  <span className="w">
+                    <b>{w.word}</b>
+                    <button
+                      className="icon"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        speak(w.word)
+                      }}
+                      title="Nghe phát âm"
+                      aria-label={`Nghe ${w.word}`}
+                    >
+                      <Volume2 size={15} />
+                    </button>
+                  </span>
+                  <span className="m">{w.meaning}</span>
+                  <span className="st" title="Số lần ôn và tỉ lệ đúng">
+                    {w.lastResult === 'wrong' && <span className="dot-miss" title="Sai lần gần nhất" />}
+                    {w.reviewCount ? (
+                      <>
+                        <span>{w.reviewCount} lần</span>
+                        <Meter value={accuracy(w)} />
+                      </>
+                    ) : (
+                      <span>Chưa ôn</span>
+                    )}
+                  </span>
+                </li>
+              ),
+            )}
+            {list.length === 0 && <li className="empty">Không tìm thấy từ phù hợp.</li>}
+          </ul>
+        </>
       )}
-
-      <ul className="word-rows">
-        {list.map((w) =>
-          open === w.word ? (
-            <WordDetail key={w.word} w={w} vocab={vocab} onClose={() => setOpen(null)} />
-          ) : (
-            <li key={w.word} className="word-row" onClick={() => setOpen(w.word)}>
-              <span className="w">
-                <b>{w.word}</b>
-                <button
-                  className="icon"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    speak(w.word)
-                  }}
-                  title="Nghe phát âm"
-                >
-                  🔊
-                </button>
-              </span>
-              <span className="m">{w.meaning}</span>
-              <span className="stats small muted" title="Số lần ôn · tỉ lệ đúng">
-                {w.lastResult === 'wrong' && <span className="dot" title="Sai lần gần nhất" />}
-                {w.reviewCount ? `${w.reviewCount}× · ${Math.round(accuracy(w) * 100)}%` : 'chưa ôn'}
-              </span>
-            </li>
-          ),
-        )}
-      </ul>
     </section>
+  )
+}
+
+function Meter({ value }: { value: number }) {
+  const cls = value < 0.5 ? 'low' : value < 0.8 ? 'mid' : ''
+  return (
+    <span className={`meter ${cls}`} title={`Đúng ${Math.round(value * 100)}%`}>
+      <i style={{ width: `${Math.max(6, value * 100)}%` }} />
+    </span>
   )
 }
 
@@ -173,12 +244,12 @@ function WordDetail({ w, vocab, onClose }: { w: VocabWord; vocab: VocabStore; on
       <div className="row space">
         <span>
           <b className="big">{w.word}</b> {w.phonetic && <span className="muted">{w.phonetic}</span>}
-          <button className="icon" onClick={() => speak(w.word)} title="Nghe phát âm">
-            🔊
+          <button className="icon" onClick={() => speak(w.word)} title="Nghe phát âm" aria-label="Nghe phát âm">
+            <Volume2 size={15} />
           </button>
         </span>
-        <button className="icon" onClick={onClose} title="Thu gọn">
-          ✕
+        <button className="icon" onClick={onClose} title="Thu gọn" aria-label="Thu gọn">
+          <ChevronUp size={16} />
         </button>
       </div>
       <label className="field">
@@ -192,12 +263,14 @@ function WordDetail({ w, vocab, onClose }: { w: VocabWord; vocab: VocabStore; on
       {w.definition && <p className="def">{w.definition}</p>}
       {w.example && <p className="example">“{w.example}”</p>}
       <p className="small muted">
-        {topic && `${topic.emoji} ${topic.name} · `}
+        {topic && `${topic.name} · `}
         Ôn {w.reviewCount ?? 0} lần, đúng {w.correctCount ?? 0} · Dùng trong bài viết {w.practiceCount} lần
       </p>
-      <button className="link danger" onClick={() => vocab.remove(w.word)}>
-        Xóa từ này
-      </button>
+      <div>
+        <button className="small danger-text" onClick={() => vocab.remove(w.word)}>
+          <Trash2 size={14} /> Xóa từ này
+        </button>
+      </div>
     </li>
   )
 }

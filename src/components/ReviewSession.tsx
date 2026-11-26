@@ -1,3 +1,4 @@
+import { ArrowRight, Check, RefreshCw, RotateCcw, Volume2, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { speak } from '../dictionary'
 import { checkEnglish, checkVietnamese, REVIEW_MODES, type ReviewMode, type Verdict } from '../review'
@@ -29,32 +30,42 @@ export function ReviewSession({ mode, words, onResult, onExit, onRetry }: Props)
     const right = words.length - missed.length
     return (
       <section className="main review">
-        <h2>🎉 Hoàn thành!</h2>
-        <p className="big">
-          Đúng <b>{right}</b>/{words.length} từ
-        </p>
-        <div className="progress">
-          <div style={{ width: `${(right / words.length) * 100}%` }} />
-        </div>
-        {missed.length > 0 && (
-          <>
-            <strong>Từ cần ôn thêm</strong>
-            <ul className="word-rows compact">
+        <div className="card summary">
+          <div
+            className="ring"
+            style={{
+              background: `conic-gradient(var(--good) ${(right / words.length) * 360}deg, var(--border) 0)`,
+            }}
+          >
+            <span className="ring-inner">
+              {right}/{words.length}
+            </span>
+          </div>
+          <h2>{missed.length === 0 ? 'Xuất sắc, bạn nhớ hết!' : 'Hoàn thành lượt ôn'}</h2>
+          <p className="muted">
+            {modeInfo.name} · đúng {Math.round((right / words.length) * 100)}%
+          </p>
+          {missed.length > 0 && (
+            <ul className="card word-rows" style={{ width: '100%', textAlign: 'left', boxShadow: 'none' }}>
               {missed.map((w) => (
-                <li key={w.word}>
-                  <b>{w.word}</b> <span className="muted">{w.meaning}</span>
+                <li key={w.word} className="word-row" style={{ cursor: 'default' }}>
+                  <span className="w">
+                    <b>{w.word}</b>
+                  </span>
+                  <span className="m">{w.meaning}</span>
+                  <span />
                 </li>
               ))}
             </ul>
-          </>
-        )}
-        <div className="row">
-          {missed.length > 0 && (
-            <button className="primary" onClick={() => onRetry(missed)}>
-              Ôn lại {missed.length} từ sai
-            </button>
           )}
-          <button onClick={onExit}>Về kho từ</button>
+          <div className="row center">
+            <button onClick={onExit}>Về kho từ</button>
+            {missed.length > 0 && (
+              <button className="primary" onClick={() => onRetry(missed)}>
+                <RotateCcw size={16} /> Ôn lại {missed.length} từ sai
+              </button>
+            )}
+          </div>
         </div>
       </section>
     )
@@ -62,15 +73,15 @@ export function ReviewSession({ mode, words, onResult, onExit, onRetry }: Props)
 
   return (
     <section className="main review">
-      <div className="row space">
-        <h2>
-          {modeInfo.icon} {modeInfo.name}
-        </h2>
-        <button onClick={onExit}>Dừng</button>
+      <div className="row space" style={{ marginBottom: 12 }}>
+        <h2>{modeInfo.name}</h2>
+        <button className="ghost small" onClick={onExit}>
+          <X size={16} /> Dừng
+        </button>
       </div>
-      <div className="row space small muted">
+      <div className="row space small muted" style={{ marginBottom: 6 }}>
         <span>
-          Thẻ {i + 1}/{words.length}
+          {i + 1} / {words.length}
         </span>
         <span>Đã ôn từ này {card.reviewCount ?? 0} lần</span>
       </div>
@@ -101,24 +112,26 @@ function Flashcard({ card, onAnswer }: { card: VocabWord; onAnswer: (right: bool
           <>
             <span className="huge">{card.word}</span>
             {card.phonetic && <span className="muted">{card.phonetic}</span>}
-            <span className="hint">Nhớ nghĩa rồi bấm để lật thẻ</span>
+            <span className="hint">Nhớ nghĩa, rồi bấm để lật thẻ</span>
           </>
         )}
       </button>
       <div className="row center">
-        <button onClick={() => speak(card.word)}>🔊</button>
+        <button onClick={() => speak(card.word)} aria-label="Nghe phát âm">
+          <Volume2 size={16} />
+        </button>
         {flipped ? (
           <>
-            <button className="bad" onClick={() => onAnswer(false)}>
-              😕 Chưa nhớ
+            <button className="bad lg" onClick={() => onAnswer(false)}>
+              <X size={17} /> Chưa nhớ
             </button>
-            <button className="good" onClick={() => onAnswer(true)}>
-              😊 Đã nhớ
+            <button className="good lg" onClick={() => onAnswer(true)}>
+              <Check size={17} /> Đã nhớ
             </button>
           </>
         ) : (
-          <button className="primary" onClick={() => setFlipped(true)}>
-            Lật thẻ
+          <button className="primary lg" onClick={() => setFlipped(true)}>
+            <RefreshCw size={16} /> Lật thẻ
           </button>
         )}
       </div>
@@ -159,13 +172,13 @@ function TypingCard({
 
   return (
     <form className="flashcard typing" onSubmit={submit}>
-      <span className="muted small">{toEnglish ? 'Từ tiếng Anh của:' : 'Nghĩa tiếng Việt của:'}</span>
+      <span className="prompt">{toEnglish ? 'Viết từ tiếng Anh' : 'Viết nghĩa tiếng Việt'}</span>
       <span className="huge">{toEnglish ? card.meaning : card.word}</span>
       {!toEnglish && (
         <span className="row center">
           {card.phonetic && <span className="muted">{card.phonetic}</span>}
-          <button type="button" className="icon" onClick={() => speak(card.word)}>
-            🔊
+          <button type="button" className="icon" onClick={() => speak(card.word)} aria-label="Nghe phát âm">
+            <Volume2 size={16} />
           </button>
         </span>
       )}
@@ -192,13 +205,14 @@ function TypingCard({
       ) : (
         <>
           <p className={right ? 'verdict ok' : 'verdict ko'}>
+            {right ? <Check size={16} /> : <X size={16} />}
             {override
-              ? '✅ Đã tính là đúng'
+              ? 'Đã tính là đúng'
               : verdict === 'right'
-                ? '✅ Chính xác!'
+                ? 'Chính xác'
                 : verdict === 'almost'
-                  ? '✅ Gần đúng (thiếu dấu)'
-                  : '❌ Chưa đúng'}
+                  ? 'Gần đúng (thiếu dấu)'
+                  : 'Chưa đúng'}
           </p>
           <p>
             Đáp án: <b>{toEnglish ? card.word : card.meaning}</b>
@@ -211,7 +225,7 @@ function TypingCard({
               </button>
             )}
             <button ref={nextBtn} type="button" className="primary" onClick={() => onAnswer(right)}>
-              Tiếp →
+              Tiếp <ArrowRight size={16} />
             </button>
           </div>
         </>
