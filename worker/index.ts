@@ -1,9 +1,10 @@
 import { handleAi } from './ai'
 import { handleAuth } from './auth'
 import { json, type Env } from './http'
+import { serveSite } from './site'
 import { handleVocab } from './vocab'
 
-/** Serves the accounts and vocabulary APIs from D1; every other path is the built app in dist/ (static assets). */
+/** Serves the accounts and vocabulary APIs from D1; every other path is the public site or the app in dist/ (static assets). */
 export default {
   async fetch(request, env): Promise<Response> {
     const url = new URL(request.url)
@@ -19,6 +20,6 @@ export default {
     if (pathname.startsWith('/api/')) {
       return json({ error: 'not_found' }, 404)
     }
-    return env.ASSETS.fetch(request)
+    return serveSite(request, env)
   },
 } satisfies ExportedHandler<Env>

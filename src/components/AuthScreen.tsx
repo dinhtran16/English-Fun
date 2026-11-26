@@ -118,6 +118,9 @@ export function AuthScreen({ onSignedIn, onGuest }: Props) {
       <p className="hint" style={{ textAlign: 'center', marginTop: -12 }}>
         Kho từ khi dùng thử chỉ lưu trên máy này.
       </p>
+      <p className="hint" style={{ textAlign: 'center' }}>
+        <a href="/">Giới thiệu English Fun</a> · <a href="/chu-de">Từ vựng theo chủ đề</a> · <a href="/blog">Blog</a>
+      </p>
     </section>
   )
 }

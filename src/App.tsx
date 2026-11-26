@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { checkSession, signOut, type AuthState } from './auth'
 import { ArrowRight, BookOpen, Library, LogIn, LogOut, PenLine } from 'lucide-react'
 import { AuthScreen } from './components/AuthScreen'
@@ -29,6 +29,28 @@ function readLevel(): Level {
   return 'B1'
 }
 
+/**
+ * Links from the public pages open the app with a preset, e.g. /app/?guest=1&topic=travel&skill=reading.
+ * guest=1 skips the sign-in screen (guests only use built-in content, so no AI cost).
+ */
+interface EntryLink {
+  guest: boolean
+  topic: Topic | null
+  skill: Skill | null
+}
+
+function readEntryLink(): EntryLink {
+  const q = new URLSearchParams(window.location.search)
+  const skill = q.get('skill')
+  const link: EntryLink = {
+    guest: q.get('guest') === '1',
+    topic: TOPICS.find((t) => t.id === q.get('topic')) ?? null,
+    skill: skill === 'reading' || skill === 'writing' ? skill : null,
+  }
+  if (window.location.search) window.history.replaceState(null, '', window.location.pathname)
+  return link
+}
+
 type Screen = { name: 'home' } | { name: 'practice' } | { name: 'vocab' }
 
 /** The exercise in progress. It stays mounted while the learner visits other screens. */
@@ -57,9 +79,25 @@ export default function App() {
     }
   }
 
+  const entry = useRef<EntryLink | null>(null)
+  if (entry.current === null) entry.current = readEntryLink()
+
   useEffect(() => {
-    checkSession().then(setAuth)
+    checkSession().then((a) => setAuth(a.kind === 'signed-out' && entry.current?.guest ? { kind: 'guest' } : a))
   }, [])
+
+  // Apply the topic and skill from the link once the app is ready.
+  useEffect(() => {
+    const link = entry.current
+    if (!link?.topic || (auth.kind !== 'guest' && auth.kind !== 'signed-in')) return
+    entry.current = { guest: false, topic: null, skill: null }
+    setTopic(link.topic)
+    if (link.skill) {
+      clearDrafts()
+      setSession({ topic: link.topic, skill: link.skill, key: Date.now() })
+      setScreen({ name: 'practice' })
+    }
+  }, [auth.kind, setSession])
 
   const logout = async () => {
     await signOut()
