@@ -41,6 +41,17 @@ const de: Messages = {
     signInForAi:
       'Melde dich an, damit die KI neue Texte für dein Niveau schreibt und deine Texte korrigiert. Ohne Konto nutzt die App fertige Texte.',
   },
+  share: {
+    button: 'Teilen',
+    title: 'English Fun teilen',
+    hint: 'Schick den Link an Freunde, die auch Englisch lernen.',
+    text: 'Ich übe Lesen und Schreiben auf Englisch mit English Fun. Kostenlos ausprobieren:',
+    link: 'Link',
+    copy: 'Link kopieren',
+    copied: 'Kopiert',
+    email: 'E-Mail',
+    more: 'Mehr',
+  },
   practice: { aiBadge: 'KI', builtinBadge: 'Fertiger Text', aiFailed: 'Bei der KI ist ein Fehler aufgetreten.', usingBuiltin: 'Wir nehmen einen fertigen Text.' },
   reading: {
     name: 'Lesen',

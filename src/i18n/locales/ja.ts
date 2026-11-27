@@ -41,6 +41,17 @@ const ja: Messages = {
     signInForAi:
       'ログインすると、AI があなたのレベルに合った新しい文章を作り、英文を添削します。ログインしない場合は、用意された文章を使います。',
   },
+  share: {
+    button: '共有',
+    title: 'English Fun を共有',
+    hint: '英語を学んでいる友だちにリンクを送りましょう。',
+    text: 'English Fun で英語のリーディングとライティングを練習しています。無料で試せます：',
+    link: 'リンク',
+    copy: 'リンクをコピー',
+    copied: 'コピーしました',
+    email: 'メール',
+    more: 'その他',
+  },
   practice: { aiBadge: 'AI', builtinBadge: '収録', aiFailed: 'AI で問題が発生しました。', usingBuiltin: '収録済みの文章を使います。' },
   reading: {
     name: 'リーディング',

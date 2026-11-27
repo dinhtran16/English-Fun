@@ -41,6 +41,17 @@ const ko: Messages = {
     signInForAi:
       '로그인하면 AI가 수준에 맞는 새 글을 만들고 작문을 첨삭해 줍니다. 로그인하지 않으면 기본 제공 글을 사용합니다.',
   },
+  share: {
+    button: '공유',
+    title: 'English Fun 공유하기',
+    hint: '영어를 공부하는 친구에게 링크를 보내 보세요.',
+    text: 'English Fun으로 영어 읽기와 쓰기를 연습하고 있어요. 무료로 사용해 보세요:',
+    link: '링크',
+    copy: '링크 복사',
+    copied: '복사됨',
+    email: '이메일',
+    more: '더보기',
+  },
   practice: { aiBadge: 'AI', builtinBadge: '기본 제공', aiFailed: 'AI에 문제가 생겼어요.', usingBuiltin: '기본 제공 글을 사용합니다.' },
   reading: {
     name: '읽기',

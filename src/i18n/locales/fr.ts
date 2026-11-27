@@ -41,6 +41,17 @@ const fr: Messages = {
     signInForAi:
       'Connectez-vous pour que l’IA crée des textes à votre niveau et corrige vos écrits. Sans compte, l’application utilise des textes intégrés.',
   },
+  share: {
+    button: 'Partager',
+    title: 'Partager English Fun',
+    hint: 'Envoyez le lien à des amis qui apprennent aussi l’anglais.',
+    text: 'Je pratique la lecture et l’écriture en anglais avec English Fun. Essai gratuit :',
+    link: 'Lien',
+    copy: 'Copier le lien',
+    copied: 'Copié',
+    email: 'E-mail',
+    more: 'Plus',
+  },
   practice: { aiBadge: 'IA', builtinBadge: 'Intégré', aiFailed: 'L’IA a rencontré un problème.', usingBuiltin: 'Nous utilisons un texte intégré.' },
   reading: {
     name: 'Lecture',

@@ -41,6 +41,17 @@ const id: Messages = {
     signInForAi:
       'Masuk agar AI membuat bacaan baru sesuai tingkatmu dan menilai tulisanmu. Tanpa akun, aplikasi memakai bacaan bawaan.',
   },
+  share: {
+    button: 'Bagikan',
+    title: 'Bagikan English Fun',
+    hint: 'Kirim tautannya ke teman yang juga sedang belajar bahasa Inggris.',
+    text: 'Saya berlatih membaca dan menulis bahasa Inggris dengan English Fun. Coba gratis:',
+    link: 'Tautan',
+    copy: 'Salin tautan',
+    copied: 'Tersalin',
+    email: 'Email',
+    more: 'Lainnya',
+  },
   practice: { aiBadge: 'AI', builtinBadge: 'Bawaan', aiFailed: 'AI mengalami masalah.', usingBuiltin: 'Memakai bacaan bawaan.' },
   reading: {
     name: 'Membaca',
