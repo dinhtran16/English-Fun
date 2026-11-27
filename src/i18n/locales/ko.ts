@@ -78,6 +78,8 @@ const ko: Messages = {
     step1: '글을 영어로 번역하세요',
     step2: '아직 쓰지 않은 단어로 2~3문장을 더 써 보세요',
     optional: '(선택)',
+    answerPlaceholder: '여기에 영어 번역을 쓰세요...',
+    ownPlaceholder: '직접 만든 문장...',
     submitAi: '제출하고 첨삭 받기',
     submit: '확인',
     grading: '첨삭 중...',

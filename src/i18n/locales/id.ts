@@ -78,6 +78,8 @@ const id: Messages = {
     step1: 'Terjemahkan bacaan ke bahasa Inggris',
     step2: 'Tulis 2-3 kalimat lagi dengan kata yang belum dipakai',
     optional: '(opsional)',
+    answerPlaceholder: 'Tulis terjemahan bahasa Inggrismu di sini...',
+    ownPlaceholder: 'Kalimatmu sendiri...',
     submitAi: 'Kirim untuk dinilai',
     submit: 'Periksa',
     grading: 'Menilai...',

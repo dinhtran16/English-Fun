@@ -43,6 +43,8 @@ function home(h: HomeCopy): string {
   const isVi = h.code === 'vi'
   const tryHref = tryUrl(h)
   const path = homePath(h)
+  /** Screenshots of the app in the page's language (English has no app language, so it shows Spanish). */
+  const shot = isVi ? '' : `-${h.code === 'en' ? 'es' : h.code}`
   const features = [BookOpen, PenLine, Library].map((ic, i) => ({ ic, title: h.features[i][0], text: h.features[i][1] }))
   const schema = [
     {
@@ -104,7 +106,7 @@ function home(h: HomeCopy): string {
             <p class="muted small">${esc(h.runs)}</p>
           </div>
           <figure class="shot hero-shot">
-            <img src="/img/doc-hieu.jpg" width="1280" height="800" alt="${esc(h.heroAlt)}" fetchpriority="high" />
+            <img src="/img/doc-hieu${shot}.jpg" width="1280" height="800" alt="${esc(h.heroAlt)}" fetchpriority="high" />
           </figure>
         </div>
       </section>
@@ -125,7 +127,7 @@ function home(h: HomeCopy): string {
       </section>
 
       <section class="wrap section split-media">
-        <figure class="shot"><img src="/img/viet-dich.jpg" width="1280" height="800" loading="lazy" alt="${esc(h.writeAlt)}" /></figure>
+        <figure class="shot"><img src="/img/viet-dich${shot}.jpg" width="1280" height="800" loading="lazy" alt="${esc(h.writeAlt)}" /></figure>
         <div>
           <h2 class="section-title left">${esc(h.stepsTitle)}</h2>
           <ol class="steps">

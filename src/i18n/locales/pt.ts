@@ -78,6 +78,8 @@ const pt: Messages = {
     step1: 'Traduza o texto para o inglês',
     step2: 'Escreva mais 2-3 frases com as palavras que faltam',
     optional: '(opcional)',
+    answerPlaceholder: 'Escreva aqui sua tradução para o inglês...',
+    ownPlaceholder: 'Suas próprias frases...',
     submitAi: 'Enviar para correção',
     submit: 'Verificar',
     grading: 'Corrigindo...',
