@@ -133,9 +133,10 @@ svg { flex-shrink: 0; }
 /* Topics */
 .topic-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
 .topic-card { display: flex; flex-direction: column; gap: 10px; padding: 18px; text-decoration: none; color: var(--text); transition: border-color 0.15s; }
-.topic-card:hover, .topic-row:hover, .post-card:hover { border-color: var(--accent); }
+.topic-card:hover, .topic-row:hover { border-color: color-mix(in srgb, var(--tone, var(--accent)) 55%, var(--border)); }
+.post-card:hover { border-color: var(--accent); }
 .topic-name { font-weight: 650; }
-.topic-icon { width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent-text); }
+.topic-icon { width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; background: color-mix(in srgb, var(--tone, var(--accent)) 12%, var(--surface)); color: var(--tone, var(--accent-text)); }
 .topic-list { display: grid; gap: 12px; }
 .topic-row { display: flex; gap: 16px; align-items: center; padding: 18px 20px; text-decoration: none; color: var(--text); }
 .topic-row strong { display: block; }
@@ -202,3 +203,35 @@ mark { background: var(--mark); color: inherit; border-radius: 3px; padding: 0 2
 .footer-links { display: flex; gap: 18px; flex-wrap: wrap; }
 .footer-links a { color: var(--muted); text-decoration: none; font-size: 0.92rem; }
 .footer-links a:hover { color: var(--accent); }
+
+/* ============ Topic tones ============
+   Each topic has its own accent color (TOPICS[].tone in src/data/passages.ts).
+   The class sets --tone; icon tiles tint their background and icon with it. */
+.tone-blue { --tone: #2563eb; }
+.tone-cyan { --tone: #0e7490; }
+.tone-violet { --tone: #7c3aed; }
+.tone-rose { --tone: #e11d48; }
+.tone-amber { --tone: #b45309; }
+.tone-indigo { --tone: #4f46e5; }
+.tone-orange { --tone: #ea580c; }
+.tone-teal { --tone: #0f766e; }
+.tone-pink { --tone: #db2777; }
+.tone-lime { --tone: #4d7c0f; }
+.tone-fuchsia { --tone: #c026d3; }
+.tone-green { --tone: #15803d; }
+.tone-slate { --tone: #475467; }
+@media (prefers-color-scheme: dark) {
+  .tone-blue { --tone: #60a5fa; }
+  .tone-cyan { --tone: #22d3ee; }
+  .tone-violet { --tone: #a78bfa; }
+  .tone-rose { --tone: #fb7185; }
+  .tone-amber { --tone: #fbbf24; }
+  .tone-indigo { --tone: #818cf8; }
+  .tone-orange { --tone: #fb923c; }
+  .tone-teal { --tone: #2dd4bf; }
+  .tone-pink { --tone: #f472b6; }
+  .tone-lime { --tone: #a3e635; }
+  .tone-fuchsia { --tone: #e879f9; }
+  .tone-green { --tone: #4ade80; }
+  .tone-slate { --tone: #94a0b4; }
+}

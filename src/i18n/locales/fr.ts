@@ -7,7 +7,20 @@ const fr: Messages = {
     text: 'English Fun explique les mots, traduit les textes et corrige vos écrits dans cette langue. Vous pouvez la changer à tout moment.',
     label: 'Votre langue',
   },
-  topics: { work: 'Travail', travel: 'Voyages', technology: 'Technologie', health: 'Santé', daily: 'Vie quotidienne' },
+  topics: {
+    work: 'Travail',
+    travel: 'Voyages',
+    technology: 'Technologie',
+    health: 'Santé',
+    daily: 'Vie quotidienne',
+    education: 'Éducation',
+    food: 'Cuisine et boissons',
+    shopping: 'Shopping',
+    family: 'Famille et amis',
+    sports: 'Sport',
+    entertainment: 'Cinéma et musique',
+    environment: 'Environnement',
+  },
   levels: { A2: 'Débutant', B1: 'Intermédiaire', B2: 'Intermédiaire avancé', C1: 'Avancé' },
   nav: { practice: 'S’entraîner', current: 'Exercice en cours', vocab: 'Mes mots', signIn: 'Se connecter', signOut: 'Se déconnecter' },
   sync: { loading: 'Connexion...', synced: 'Synchronisé', local: 'Enregistré sur cet appareil', error: 'Échec de la synchronisation, nouvel essai bientôt' },
@@ -217,6 +230,34 @@ const fr: Messages = {
       'Cuisiner chez soi est devenu un loisir populaire chez beaucoup de jeunes. Cela leur permet de choisir les ingrédients et de manger plus sainement. C’est aussi moins cher que de manger dehors tous les jours. Au début, suivre une recette peut sembler compliqué, mais avec la pratique cela devient relaxant. Partager un repas fait maison avec des amis ou la famille est l’un des petits plaisirs de la vie.',
     'daily-2':
       'Économiser n’est pas toujours facile, surtout quand les prix ne cessent d’augmenter. Une bonne première étape consiste à noter vos dépenses pendant un mois pour voir où part votre argent. Beaucoup de gens sont surpris de ce qu’ils dépensent en petits achats comme le café et les en-cas. Une fois vos habitudes comprises, vous pouvez fixer un budget réaliste et mettre de côté une somme fixe chaque mois pour les imprévus.',
+    'education-1':
+      'Beaucoup d’adultes pensent qu’ils sont trop âgés pour apprendre une nouvelle compétence, mais la recherche montre que le cerveau continue d’évoluer tout au long de la vie. Le principal obstacle n’est généralement pas l’âge, mais le manque de temps et de confiance en soi. Se fixer un petit objectif quotidien, comme étudier quinze minutes, rend les progrès accessibles. Les adultes ont aussi un avantage : ils peuvent relier les nouvelles connaissances à leur propre expérience.',
+    'education-2':
+      'À seulement deux semaines de son examen final, Mai a décidé de changer sa façon de réviser. Au lieu de relire ses notes encore et encore, elle s’interrogeait avec des questions et expliquait chaque sujet à voix haute, comme si elle l’enseignait à une amie. Elle faisait aussi de courtes pauses toutes les heures et se couchait tôt. Le jour de l’examen, elle était nerveuse, mais bien préparée.',
+    'food-1':
+      'Dans de nombreuses villes d’Asie, la cuisine de rue fait partie de la vie quotidienne. Dès le petit matin, les vendeurs installent de petits stands sur le trottoir et vendent des bols de soupe fumante, du pain frais et des boissons sucrées. Les prix sont bas et les plats sont souvent préparés devant les clients. Pour les visiteurs, goûter la cuisine de rue locale est l’un des meilleurs moyens de comprendre une culture, à condition de choisir des stands fréquentés aux ingrédients frais.',
+    'food-2':
+      'Le sucre se cache dans de nombreux produits que nous ne considérons pas comme sucrés, comme les sauces, le pain et les céréales du petit-déjeuner. En consommer trop peut entraîner une prise de poids et des problèmes dentaires. Les nutritionnistes conseillent de lire attentivement les étiquettes et de remplacer les sodas par de l’eau ou du thé non sucré. Au bout de quelques semaines, beaucoup de gens remarquent que leur goût change et que les aliments très sucrés ne leur font plus envie.',
+    'shopping-1':
+      'Les achats en ligne ont changé la façon dont on achète presque tout. En quelques clics, les clients peuvent comparer les prix, lire des avis et se faire livrer à domicile. Cependant, il est aussi plus facile de dépenser de l’argent pour des choses dont on n’a pas vraiment besoin. Avant de passer commande, mieux vaut vérifier les conditions de retour et se demander si l’on voudra encore cet article le mois prochain.',
+    'shopping-2':
+      'Chaque samedi, Hoa va au marché du quartier, près de son appartement. Elle le préfère au supermarché parce que les légumes sont plus frais et que les marchands la connaissent par son prénom. On y marchande souvent, mais elle le fait toujours poliment et avec le sourire. Elle apporte ses propres sacs en tissu pour réduire les déchets plastiques et repart généralement avec un panier rempli de fruits, d’herbes aromatiques et de fleurs.',
+    'family-1':
+      'Dans la famille de Nam, le dîner du dimanche est une tradition que personne ne veut manquer. Ses grands-parents, ses parents et ses cousins se réunissent dans une même maison, et chacun aide à préparer le repas. Les enfants mettent la table pendant que les adultes cuisinent et discutent dans la cuisine. Pendant le dîner, ils partagent les nouvelles de la semaine et rient de vieilles histoires. Pour Nam, ces soirées sont le moment le plus précieux de la semaine.',
+    'family-2':
+      'En vieillissant, il devient plus difficile de garder le contact avec ses vieux amis. Le travail, la famille et les déménagements nous laissent moins de temps libre. Pourtant, les amitiés solides sont bonnes pour la santé mentale comme pour la santé physique. Un petit message, un appel le jour d’un anniversaire ou un café une fois par mois peuvent faire vivre une amitié. Ce qui compte le plus, ce n’est pas la fréquence des rencontres, mais l’effort que l’on fait.',
+    'sports-1':
+      'Il y a six mois, Tuan ne pouvait pas courir plus de dix minutes sans s’arrêter. Il a décidé de s’inscrire à une course de cinq kilomètres pour se fixer un objectif clair. Il s’est entraîné trois fois par semaine et a augmenté peu à peu la distance. Le jour de la course, des milliers de coureurs ont envahi les rues et le public les encourageait bruyamment. Tuan n’est pas arrivé premier, mais franchir la ligne d’arrivée l’a rendu extrêmement fier.',
+    'sports-2':
+      'Pratiquer un sport collectif comme le football ou le volley-ball apporte bien plus qu’un simple exercice physique. Les joueurs apprennent à communiquer, à se faire confiance et à accepter aussi bien la victoire que la défaite. Les enfants qui rejoignent une équipe développent souvent de meilleures compétences sociales et plus de confiance en eux. Pour les adultes, un match hebdomadaire peut être un excellent moyen d’évacuer le stress après le travail et de se faire de nouveaux amis en dehors du bureau.',
+    'entertainment-1':
+      'Regarder des films en anglais est une façon agréable d’améliorer sa compréhension orale. Au début, il est utile d’activer les sous-titres dans sa propre langue pour suivre l’histoire. Ensuite, on peut passer aux sous-titres en anglais, puis essayer de regarder sans sous-titres. Choisir un film que l’on a déjà vu facilite les choses, car on peut se concentrer sur les mots et les expressions plutôt que sur l’intrigue.',
+    'entertainment-2':
+      'Les services de streaming ont changé notre façon de regarder la télévision et d’écouter de la musique. Au lieu d’attendre un épisode par semaine, les spectateurs peuvent désormais regarder une série entière en un week-end. Ce confort plaît beaucoup, mais certains craignent qu’un choix infini rende plus difficile de décider quoi regarder. D’autres regrettent le plaisir de discuter d’un nouvel épisode avec leurs amis le lendemain de sa diffusion.',
+    'environment-1':
+      'Chaque année, des millions de tonnes de plastique finissent dans les rivières et les océans, où elles nuisent aux poissons, aux oiseaux et à d’autres animaux. Le plastique peut mettre des centaines d’années à se dégrader. Heureusement, de petits changements dans nos habitudes quotidiennes peuvent aider. Avoir une gourde réutilisable, refuser les pailles en plastique et bien trier ses déchets sont des gestes simples. Quand beaucoup de gens changent ensemble, l’effet sur l’environnement devient important.',
+    'environment-2':
+      'Certaines villes trouvent des moyens créatifs de devenir plus vertes. Elles plantent des arbres le long des routes très fréquentées, aménagent des parcs sur d’anciens terrains industriels et créent des pistes cyclables sûres. Ces projets réduisent la pollution de l’air et aident à garder les rues plus fraîches pendant les étés chauds. Les habitants en profitent aussi autrement : les espaces verts encouragent les gens à faire du sport, à rencontrer leurs voisins et à passer plus de temps dehors.',
   },
 }
 

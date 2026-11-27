@@ -7,7 +7,20 @@ const es: Messages = {
     text: 'English Fun explica las palabras, traduce los textos y corrige tus escritos en este idioma. Puedes cambiarlo cuando quieras.',
     label: 'Tu idioma',
   },
-  topics: { work: 'Trabajo', travel: 'Viajes', technology: 'Tecnología', health: 'Salud', daily: 'Vida diaria' },
+  topics: {
+    work: 'Trabajo',
+    travel: 'Viajes',
+    technology: 'Tecnología',
+    health: 'Salud',
+    daily: 'Vida diaria',
+    education: 'Educación',
+    food: 'Comida y bebida',
+    shopping: 'Compras',
+    family: 'Familia y amigos',
+    sports: 'Deportes',
+    entertainment: 'Cine y música',
+    environment: 'Medio ambiente',
+  },
   levels: { A2: 'Básico', B1: 'Intermedio', B2: 'Intermedio alto', C1: 'Avanzado' },
   nav: { practice: 'Practicar', current: 'Ejercicio actual', vocab: 'Mis palabras', signIn: 'Iniciar sesión', signOut: 'Cerrar sesión' },
   sync: { loading: 'Conectando...', synced: 'Sincronizado', local: 'Guardado en este dispositivo', error: 'Error al sincronizar, se reintentará' },
@@ -217,6 +230,34 @@ const es: Messages = {
       'Cocinar en casa se ha convertido en una afición popular entre muchos jóvenes. Les permite controlar los ingredientes y comer de forma más sana. Además, es más barato que comer fuera todos los días. Al principio, seguir una receta puede parecer complicado, pero con la práctica se vuelve relajante. Compartir una comida casera con amigos o familia es uno de los pequeños placeres de la vida.',
     'daily-2':
       'Ahorrar dinero no siempre es fácil, sobre todo cuando los precios no dejan de subir. Un buen primer paso es anotar tus gastos durante un mes para ver adónde va tu dinero. Muchas personas se sorprenden de cuánto gastan en cosas pequeñas como café y aperitivos. Cuando entiendes tus hábitos, puedes fijar un presupuesto realista y apartar una cantidad fija cada mes para emergencias.',
+    'education-1':
+      'Muchos adultos creen que son demasiado mayores para aprender una nueva habilidad, pero las investigaciones muestran que el cerebro sigue cambiando a lo largo de toda la vida. El mayor obstáculo no suele ser la edad, sino la falta de tiempo y de confianza. Fijarse una pequeña meta diaria, como estudiar quince minutos, hace que el progreso parezca alcanzable. Los adultos también tienen una ventaja: pueden relacionar los nuevos conocimientos con su propia experiencia.',
+    'education-2':
+      'A solo dos semanas de su examen final, Mai decidió cambiar su forma de estudiar. En lugar de leer sus apuntes una y otra vez, se ponía a prueba con preguntas y explicaba cada tema en voz alta como si se lo enseñara a una amiga. También hacía pausas cortas cada hora y se acostaba temprano. El día del examen estaba nerviosa, pero bien preparada.',
+    'food-1':
+      'En muchas ciudades asiáticas, la comida callejera forma parte de la vida diaria. A primera hora de la mañana, los vendedores montan pequeños puestos en la acera y venden cuencos de sopa humeante, pan recién hecho y bebidas dulces. Los precios son bajos y los platos a menudo se cocinan delante de los clientes. Para los visitantes, probar la comida callejera local es una de las mejores formas de conocer una cultura, siempre que elijan puestos concurridos con ingredientes frescos.',
+    'food-2':
+      'El azúcar se esconde en muchos productos que no consideramos dulces, como las salsas, el pan y los cereales del desayuno. Comer demasiado puede provocar aumento de peso y problemas en los dientes. Los nutricionistas recomiendan leer con atención las etiquetas y sustituir los refrescos por agua o té sin azúcar. Al cabo de unas semanas, muchas personas notan que su gusto cambia y que la comida muy dulce ya no les resulta tan apetecible.',
+    'shopping-1':
+      'Las compras por internet han cambiado la forma en que compramos casi todo. Con unos pocos clics, los clientes pueden comparar precios, leer opiniones y recibir los productos en casa. Sin embargo, también es más fácil gastar dinero en cosas que en realidad no necesitamos. Antes de hacer un pedido, conviene revisar la política de devoluciones y preguntarse si todavía querrías ese artículo el mes que viene.',
+    'shopping-2':
+      'Todos los sábados, Hoa va al mercado del barrio, cerca de su apartamento. Lo prefiere al supermercado porque las verduras son más frescas y los vendedores la conocen por su nombre. Allí es normal regatear, pero ella siempre lo hace con educación y una sonrisa. Lleva sus propias bolsas de tela para reducir los residuos de plástico y suele volver con una cesta llena de fruta, hierbas y flores.',
+    'family-1':
+      'En la familia de Nam, la cena del domingo es una tradición que nadie quiere perderse. Sus abuelos, sus padres y sus primos se reúnen en una casa, y todos ayudan a preparar la comida. Los niños ponen la mesa mientras los adultos cocinan y charlan en la cocina. Durante la cena, comparten las novedades de la semana y se ríen con viejas historias. Para Nam, estas noches son el momento más valioso de la semana.',
+    'family-2':
+      'A medida que nos hacemos mayores, cuesta más mantener el contacto con los viejos amigos. El trabajo, la familia y las mudanzas a otras ciudades nos dejan menos tiempo libre. Sin embargo, las amistades sólidas son buenas para nuestra salud mental y física. Un mensaje corto, una llamada en un cumpleaños o un café una vez al mes pueden mantener viva una amistad. Lo más importante no es con qué frecuencia nos vemos, sino hacer el esfuerzo.',
+    'sports-1':
+      'Hace seis meses, Tuan no podía correr más de diez minutos sin parar. Decidió inscribirse en una carrera de cinco kilómetros para tener un objetivo claro. Entrenó tres veces por semana y aumentó poco a poco la distancia. El día de la carrera, miles de corredores llenaron las calles y el público animaba con fuerza. Tuan no llegó el primero, pero cruzar la meta lo hizo sentirse muy orgulloso.',
+    'sports-2':
+      'Practicar un deporte de equipo como el fútbol o el voleibol ofrece mucho más que ejercicio físico. Los jugadores aprenden a comunicarse, a confiar unos en otros y a aceptar tanto la victoria como la derrota. Los niños que se unen a un equipo suelen desarrollar mejores habilidades sociales y más confianza. Para los adultos, un partido semanal puede ser una gran forma de aliviar el estrés después del trabajo y de hacer nuevos amigos fuera de la oficina.',
+    'entertainment-1':
+      'Ver películas en inglés es una forma agradable de mejorar la comprensión auditiva. Al principio, ayuda activar los subtítulos en tu propio idioma para poder seguir la historia. Más adelante, puedes cambiar a subtítulos en inglés y, por último, intentar verlas sin ninguno. Elegir una película que ya hayas visto lo hace más fácil, porque puedes concentrarte en las palabras y las expresiones en lugar de en el argumento.',
+    'entertainment-2':
+      'Las plataformas de streaming han cambiado nuestra forma de ver la televisión y escuchar música. En lugar de esperar un episodio cada semana, ahora los espectadores pueden ver una serie entera en un fin de semana. Esta comodidad gusta mucho, pero a algunas personas les preocupa que la oferta infinita haga más difícil decidir qué ver. Otras echan de menos la emoción de comentar un nuevo episodio con los amigos al día siguiente de su emisión.',
+    'environment-1':
+      'Cada año, millones de toneladas de plástico acaban en ríos y océanos, donde dañan a peces, aves y otros animales. El plástico puede tardar cientos de años en descomponerse. Por suerte, pequeños cambios en nuestros hábitos diarios pueden ayudar. Llevar una botella de agua reutilizable, rechazar las pajitas de plástico y reciclar correctamente son pasos sencillos. Cuando muchas personas hacen estos cambios juntas, el impacto en el medio ambiente es considerable.',
+    'environment-2':
+      'Algunas ciudades están encontrando formas creativas de ser más verdes. Plantan árboles en las calles con mucho tráfico, construyen parques en antiguos terrenos industriales y crean carriles seguros para bicicletas. Estos proyectos reducen la contaminación del aire y ayudan a que las calles estén más frescas durante los veranos calurosos. Los vecinos también se benefician de otras maneras: los espacios verdes animan a la gente a hacer ejercicio, a conocer a sus vecinos y a pasar más tiempo al aire libre.',
   },
 }
 

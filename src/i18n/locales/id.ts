@@ -7,7 +7,20 @@ const id: Messages = {
     text: 'English Fun menjelaskan arti kata, menerjemahkan bacaan, dan memberi masukan untuk tulisanmu dalam bahasa ini. Kamu bisa menggantinya kapan saja.',
     label: 'Bahasamu',
   },
-  topics: { work: 'Pekerjaan', travel: 'Perjalanan', technology: 'Teknologi', health: 'Kesehatan', daily: 'Kehidupan sehari-hari' },
+  topics: {
+    work: 'Pekerjaan',
+    travel: 'Perjalanan',
+    technology: 'Teknologi',
+    health: 'Kesehatan',
+    daily: 'Kehidupan sehari-hari',
+    education: 'Pendidikan',
+    food: 'Makanan dan minuman',
+    shopping: 'Belanja',
+    family: 'Keluarga dan teman',
+    sports: 'Olahraga',
+    entertainment: 'Film dan musik',
+    environment: 'Lingkungan',
+  },
   levels: { A2: 'Dasar', B1: 'Menengah', B2: 'Menengah atas', C1: 'Mahir' },
   nav: { practice: 'Latihan', current: 'Latihan saat ini', vocab: 'Kosakataku', signIn: 'Masuk', signOut: 'Keluar' },
   sync: { loading: 'Menghubungkan...', synced: 'Tersinkron', local: 'Tersimpan di perangkat ini', error: 'Gagal sinkron, akan dicoba lagi' },
@@ -217,6 +230,34 @@ const id: Messages = {
       'Memasak di rumah kini menjadi hobi populer bagi banyak anak muda. Dengan begitu mereka bisa mengatur bahan dan makan lebih sehat. Memasak juga lebih murah daripada makan di luar setiap hari. Awalnya, mengikuti resep mungkin terasa rumit, tetapi dengan latihan hal itu menjadi menenangkan. Berbagi masakan rumahan dengan teman atau keluarga adalah salah satu kesenangan sederhana dalam hidup.',
     'daily-2':
       'Menabung tidak selalu mudah, apalagi ketika harga terus naik. Langkah awal yang baik adalah mencatat pengeluaran selama sebulan untuk melihat ke mana uangmu pergi. Banyak orang terkejut melihat berapa banyak yang mereka habiskan untuk hal kecil seperti kopi dan camilan. Setelah memahami kebiasaanmu, kamu bisa membuat anggaran yang realistis dan menyisihkan jumlah tetap setiap bulan untuk keadaan darurat.',
+    'education-1':
+      'Banyak orang dewasa merasa sudah terlalu tua untuk mempelajari keterampilan baru, padahal penelitian menunjukkan bahwa otak terus berubah sepanjang hidup kita. Hambatan terbesar biasanya bukan usia, melainkan kurangnya waktu dan rasa percaya diri. Menetapkan target kecil setiap hari, misalnya belajar lima belas menit, membuat kemajuan terasa mungkin dicapai. Orang dewasa juga punya kelebihan: mereka bisa mengaitkan pengetahuan baru dengan pengalaman mereka sendiri.',
+    'education-2':
+      'Dua minggu sebelum ujian akhir, Mai memutuskan untuk mengubah cara belajarnya. Alih-alih membaca catatannya berulang kali, ia menguji dirinya dengan pertanyaan dan menjelaskan setiap topik dengan suara keras seolah sedang mengajari seorang teman. Ia juga beristirahat sebentar setiap jam dan tidur lebih awal. Pada hari ujian, ia merasa gugup tetapi sudah siap.',
+    'food-1':
+      'Di banyak kota di Asia, jajanan kaki lima adalah bagian dari kehidupan sehari-hari. Sejak pagi buta, para pedagang membuka lapak kecil di trotoar dan menjual semangkuk sup panas, roti segar, dan minuman manis. Harganya murah, dan makanannya sering dimasak langsung di depan pembeli. Bagi wisatawan, mencicipi jajanan lokal adalah salah satu cara terbaik untuk memahami sebuah budaya, asalkan mereka memilih lapak yang ramai dengan bahan-bahan segar.',
+    'food-2':
+      'Gula tersembunyi di banyak produk yang tidak kita anggap manis, seperti saus, roti, dan sereal sarapan. Terlalu banyak mengonsumsi gula dapat menyebabkan kenaikan berat badan dan masalah gigi. Ahli gizi menyarankan untuk membaca label makanan dengan teliti dan mengganti minuman bersoda dengan air putih atau teh tanpa gula. Setelah beberapa minggu, banyak orang merasa selera mereka berubah dan makanan yang sangat manis tidak lagi terasa menggoda.',
+    'shopping-1':
+      'Belanja online telah mengubah cara orang membeli hampir segala hal. Hanya dengan beberapa klik, pembeli bisa membandingkan harga, membaca ulasan, dan menerima barang di depan pintu. Namun, jadi lebih mudah juga menghabiskan uang untuk barang yang sebenarnya tidak kita butuhkan. Sebelum memesan, sebaiknya periksa kebijakan pengembalian barang dan tanyakan pada diri sendiri apakah kamu masih menginginkan barang itu bulan depan.',
+    'shopping-2':
+      'Setiap hari Sabtu, Hoa pergi ke pasar dekat apartemennya. Ia lebih suka pasar daripada supermarket karena sayurannya lebih segar dan para pedagang mengenal namanya. Tawar-menawar sudah biasa di sana, tetapi ia selalu melakukannya dengan sopan dan sambil tersenyum. Ia membawa tas kain sendiri untuk mengurangi sampah plastik, dan biasanya pulang dengan keranjang penuh buah, daun rempah, dan bunga.',
+    'family-1':
+      'Di keluarga Nam, makan malam hari Minggu adalah tradisi yang tidak ingin dilewatkan siapa pun. Kakek-nenek, orang tua, dan sepupunya berkumpul di satu rumah, dan semua orang ikut membantu menyiapkan makanan. Anak-anak menata meja sementara orang dewasa memasak dan mengobrol di dapur. Saat makan malam, mereka berbagi kabar selama seminggu dan tertawa mendengar cerita lama. Bagi Nam, malam-malam seperti ini adalah bagian paling berharga dalam seminggu.',
+    'family-2':
+      'Semakin bertambah usia, semakin sulit menjaga hubungan dengan teman lama. Pekerjaan, keluarga, dan pindah ke kota baru membuat waktu luang kita berkurang. Padahal, persahabatan yang erat baik untuk kesehatan mental maupun fisik. Pesan singkat, telepon saat ulang tahun, atau ngopi bersama sebulan sekali bisa menjaga persahabatan tetap hidup. Yang paling penting bukanlah seberapa sering kita bertemu, melainkan kemauan kita untuk berusaha.',
+    'sports-1':
+      'Enam bulan lalu, Tuan tidak bisa berlari lebih dari sepuluh menit tanpa berhenti. Ia memutuskan untuk mendaftar lomba lari lima kilometer agar punya tujuan yang jelas. Ia berlatih tiga kali seminggu dan perlahan menambah jaraknya. Pada hari lomba, ribuan pelari memenuhi jalanan dan penonton bersorak dengan meriah. Tuan tidak finis di urutan pertama, tetapi melewati garis finis membuatnya sangat bangga.',
+    'sports-2':
+      'Bermain olahraga tim seperti sepak bola atau bola voli memberikan jauh lebih banyak manfaat daripada sekadar latihan fisik. Para pemain belajar berkomunikasi, saling percaya, dan menerima kemenangan maupun kekalahan. Anak-anak yang bergabung dengan sebuah tim sering kali memiliki keterampilan sosial yang lebih baik dan rasa percaya diri yang lebih tinggi. Bagi orang dewasa, pertandingan mingguan bisa menjadi cara yang bagus untuk melepas stres setelah bekerja dan mendapatkan teman baru di luar kantor.',
+    'entertainment-1':
+      'Menonton film berbahasa Inggris adalah cara yang menyenangkan untuk melatih kemampuan mendengar. Awalnya, menyalakan subtitle dalam bahasamu sendiri akan membantumu mengikuti ceritanya. Setelah itu, kamu bisa beralih ke subtitle bahasa Inggris dan akhirnya mencoba menonton tanpa subtitle sama sekali. Memilih film yang sudah pernah kamu tonton membuat ini lebih mudah, karena kamu bisa fokus pada kata dan ungkapan, bukan pada alur ceritanya.',
+    'entertainment-2':
+      'Layanan streaming telah mengubah cara kita menonton televisi dan mendengarkan musik. Alih-alih menunggu satu episode setiap minggu, penonton kini bisa menonton satu serial penuh dalam satu akhir pekan. Kemudahan ini sangat digemari, tetapi sebagian orang khawatir pilihan yang tak ada habisnya justru membuat kita sulit memutuskan mau menonton apa. Sebagian lainnya merindukan serunya membahas episode baru bersama teman sehari setelah episode itu ditayangkan.',
+    'environment-1':
+      'Setiap tahun, jutaan ton plastik berakhir di sungai dan lautan, tempat plastik itu membahayakan ikan, burung, dan hewan lainnya. Plastik bisa membutuhkan ratusan tahun untuk terurai. Untungnya, perubahan kecil dalam kebiasaan sehari-hari dapat membantu. Membawa botol minum isi ulang, menolak sedotan plastik, dan memilah sampah dengan benar adalah langkah sederhana. Jika banyak orang melakukan perubahan ini bersama-sama, dampaknya terhadap lingkungan akan terasa besar.',
+    'environment-2':
+      'Beberapa kota menemukan cara kreatif untuk menjadi lebih hijau. Mereka menanam pohon di sepanjang jalan yang ramai, membangun taman di bekas lahan industri, dan membuat jalur sepeda yang aman. Proyek-proyek ini mengurangi polusi udara dan membantu menjaga jalanan tetap sejuk saat musim panas. Warga juga mendapat manfaat lain: ruang hijau mendorong orang untuk berolahraga, berkenalan dengan tetangga, dan lebih banyak menghabiskan waktu di luar ruangan.',
   },
 }
 

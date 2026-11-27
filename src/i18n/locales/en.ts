@@ -17,6 +17,13 @@ const en = {
     technology: 'Technology',
     health: 'Health',
     daily: 'Daily life',
+    education: 'Education',
+    food: 'Food and drink',
+    shopping: 'Shopping',
+    family: 'Family and friends',
+    sports: 'Sports',
+    entertainment: 'Films and music',
+    environment: 'Environment',
   } as Record<string, string>,
   levels: { A2: 'Beginner', B1: 'Intermediate', B2: 'Upper-intermediate', C1: 'Advanced' },
   nav: {

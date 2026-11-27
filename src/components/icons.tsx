@@ -1,16 +1,10 @@
-import { Briefcase, Cpu, HeartPulse, House, Plane, Tag, type LucideIcon } from 'lucide-react'
+import { Tag } from 'lucide-react'
+import { TOPIC_ICONS, toneClass } from '../topicIcons'
 
-const TOPIC_ICONS: Record<string, LucideIcon> = {
-  work: Briefcase,
-  travel: Plane,
-  technology: Cpu,
-  health: HeartPulse,
-  daily: House,
-}
-
-export function TopicIcon({ id, size = 20 }: { id: string; size?: number }) {
+/** The topic's icon. With `tinted`, it is drawn in the topic's own accent color. */
+export function TopicIcon({ id, size = 20, tinted = false }: { id: string; size?: number; tinted?: boolean }) {
   const Icon = TOPIC_ICONS[id] ?? Tag
-  return <Icon size={size} strokeWidth={1.8} />
+  return <Icon size={size} strokeWidth={1.8} className={tinted ? `topic-glyph ${toneClass(id)}` : undefined} />
 }
 
 export function LogoMark() {

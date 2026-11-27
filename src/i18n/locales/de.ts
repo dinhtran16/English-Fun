@@ -7,7 +7,20 @@ const de: Messages = {
     text: 'English Fun erklärt Wörter, übersetzt Texte und gibt Feedback zu deinen Texten in dieser Sprache. Du kannst sie jederzeit ändern.',
     label: 'Deine Sprache',
   },
-  topics: { work: 'Arbeit', travel: 'Reisen', technology: 'Technik', health: 'Gesundheit', daily: 'Alltag' },
+  topics: {
+    work: 'Arbeit',
+    travel: 'Reisen',
+    technology: 'Technik',
+    health: 'Gesundheit',
+    daily: 'Alltag',
+    education: 'Bildung',
+    food: 'Essen und Trinken',
+    shopping: 'Einkaufen',
+    family: 'Familie und Freunde',
+    sports: 'Sport',
+    entertainment: 'Filme und Musik',
+    environment: 'Umwelt',
+  },
   levels: { A2: 'Grundstufe', B1: 'Mittelstufe', B2: 'Obere Mittelstufe', C1: 'Fortgeschritten' },
   nav: { practice: 'Üben', current: 'Aktuelle Übung', vocab: 'Meine Wörter', signIn: 'Anmelden', signOut: 'Abmelden' },
   sync: { loading: 'Verbinde...', synced: 'Synchronisiert', local: 'Auf diesem Gerät gespeichert', error: 'Synchronisierung fehlgeschlagen, neuer Versuch folgt' },
@@ -217,6 +230,34 @@ const de: Messages = {
       'Zu Hause zu kochen ist für viele junge Menschen ein beliebtes Hobby geworden. So können sie die Zutaten selbst bestimmen und sich gesünder ernähren. Außerdem ist es günstiger, als jeden Tag auswärts zu essen. Am Anfang wirkt es vielleicht kompliziert, einem Rezept zu folgen, aber mit etwas Übung wird es entspannend. Ein selbst gekochtes Essen mit Freunden oder der Familie zu teilen, gehört zu den einfachen Freuden des Lebens.',
     'daily-2':
       'Geld zu sparen ist nicht immer leicht, vor allem wenn die Preise ständig steigen. Ein guter erster Schritt ist, einen Monat lang alle Ausgaben aufzuschreiben, um zu sehen, wohin das Geld fließt. Viele sind überrascht, wie viel sie für Kleinigkeiten wie Kaffee und Snacks ausgeben. Wenn du deine Gewohnheiten verstehst, kannst du ein realistisches Budget festlegen und jeden Monat einen festen Betrag für Notfälle zurücklegen.',
+    'education-1':
+      'Viele Erwachsene glauben, sie seien zu alt, um etwas Neues zu lernen, doch die Forschung zeigt, dass sich das Gehirn ein Leben lang verändert. Das größte Hindernis ist meist nicht das Alter, sondern fehlende Zeit und fehlendes Selbstvertrauen. Ein kleines tägliches Ziel, zum Beispiel fünfzehn Minuten Lernen, lässt Fortschritte erreichbar wirken. Erwachsene haben außerdem einen Vorteil: Sie können neues Wissen mit ihren eigenen Erfahrungen verknüpfen.',
+    'education-2':
+      'Nur zwei Wochen vor ihrer Abschlussprüfung beschloss Mai, anders zu lernen. Statt ihre Notizen immer wieder durchzulesen, fragte sie sich selbst ab und erklärte jedes Thema laut, als würde sie es einer Freundin beibringen. Außerdem machte sie jede Stunde eine kurze Pause und ging früh schlafen. Am Prüfungstag war sie nervös, aber gut vorbereitet.',
+    'food-1':
+      'In vielen asiatischen Städten gehört Straßenessen zum Alltag. Schon früh am Morgen bauen Händler kleine Stände auf dem Gehweg auf und verkaufen dampfende Suppenschalen, frisches Brot und süße Getränke. Die Preise sind niedrig, und die Gerichte werden oft direkt vor den Kunden zubereitet. Für Besucher ist das Probieren von Straßenessen eine der besten Möglichkeiten, eine Kultur kennenzulernen, solange sie gut besuchte Stände mit frischen Zutaten wählen.',
+    'food-2':
+      'Zucker steckt in vielen Produkten, die wir nicht für süß halten, etwa in Soßen, Brot und Frühstücksflocken. Wer zu viel davon isst, nimmt leichter zu und bekommt Probleme mit den Zähnen. Ernährungsberater empfehlen, die Etiketten genau zu lesen und Limonaden durch Wasser oder ungesüßten Tee zu ersetzen. Nach ein paar Wochen merken viele, dass sich ihr Geschmack verändert und sehr süße Speisen nicht mehr so verlockend sind.',
+    'shopping-1':
+      'Online-Shopping hat verändert, wie wir fast alles kaufen. Mit wenigen Klicks können Kunden Preise vergleichen, Bewertungen lesen und sich Produkte bis an die Haustür liefern lassen. Allerdings ist es dadurch auch leichter, Geld für Dinge auszugeben, die wir eigentlich nicht brauchen. Vor einer Bestellung lohnt es sich, die Rückgaberegeln zu prüfen und sich zu fragen, ob man den Artikel nächsten Monat noch haben möchte.',
+    'shopping-2':
+      'Jeden Samstag geht Hoa auf den Markt in der Nähe ihrer Wohnung. Sie mag ihn lieber als den Supermarkt, weil das Gemüse frischer ist und die Händler sie beim Namen kennen. Handeln ist dort üblich, aber sie tut es immer höflich und mit einem Lächeln. Sie bringt ihre eigenen Stofftaschen mit, um Plastikmüll zu vermeiden, und geht meist mit einem Korb voller Obst, Kräuter und Blumen nach Hause.',
+    'family-1':
+      'In Nams Familie ist das Sonntagsessen eine Tradition, die niemand verpassen möchte. Seine Großeltern, Eltern und Cousins treffen sich in einem Haus, und alle helfen beim Kochen. Die Kinder decken den Tisch, während die Erwachsenen in der Küche kochen und plaudern. Beim Essen erzählen sie, was in der Woche passiert ist, und lachen über alte Geschichten. Für Nam sind diese Abende der wertvollste Teil der Woche.',
+    'family-2':
+      'Je älter wir werden, desto schwerer ist es, mit alten Freunden in Kontakt zu bleiben. Arbeit, Familie und Umzüge in neue Städte lassen uns weniger Freizeit. Dabei sind enge Freundschaften gut für die seelische und körperliche Gesundheit. Eine kurze Nachricht, ein Anruf zum Geburtstag oder ein Kaffee einmal im Monat können eine Freundschaft lebendig halten. Am wichtigsten ist nicht, wie oft wir uns sehen, sondern dass wir uns Mühe geben.',
+    'sports-1':
+      'Vor sechs Monaten konnte Tuan nicht länger als zehn Minuten am Stück laufen. Er meldete sich für einen Fünf-Kilometer-Lauf an, um ein klares Ziel zu haben. Er trainierte dreimal pro Woche und steigerte die Strecke langsam. Am Tag des Rennens füllten Tausende Läufer die Straßen, und die Zuschauer jubelten laut. Tuan wurde nicht Erster, aber als er die Ziellinie überquerte, war er unglaublich stolz.',
+    'sports-2':
+      'Ein Mannschaftssport wie Fußball oder Volleyball bietet viel mehr als nur Bewegung. Die Spieler lernen, miteinander zu kommunizieren, einander zu vertrauen und Sieg wie Niederlage anzunehmen. Kinder, die in einer Mannschaft spielen, entwickeln oft bessere soziale Fähigkeiten und mehr Selbstvertrauen. Für Erwachsene kann ein wöchentliches Spiel eine tolle Möglichkeit sein, nach der Arbeit Stress abzubauen und außerhalb des Büros neue Freunde zu finden.',
+    'entertainment-1':
+      'Filme auf Englisch zu schauen ist eine angenehme Art, das Hörverstehen zu verbessern. Am Anfang hilft es, Untertitel in der eigenen Sprache einzuschalten, damit man der Handlung folgen kann. Später kann man auf englische Untertitel wechseln und es schließlich ganz ohne versuchen. Ein Film, den man schon kennt, macht es leichter, weil man sich auf Wörter und Ausdrücke statt auf die Handlung konzentrieren kann.',
+    'entertainment-2':
+      'Streamingdienste haben verändert, wie wir fernsehen und Musik hören. Statt jede Woche auf eine neue Folge zu warten, können Zuschauer heute eine ganze Serie an einem Wochenende anschauen. Diese Bequemlichkeit ist beliebt, doch manche befürchten, dass die endlose Auswahl die Entscheidung erschwert, was man schauen soll. Andere vermissen die Spannung, am Tag nach der Ausstrahlung mit Freunden über eine neue Folge zu sprechen.',
+    'environment-1':
+      'Jedes Jahr landen Millionen Tonnen Plastik in Flüssen und Meeren, wo sie Fischen, Vögeln und anderen Tieren schaden. Plastik kann Hunderte von Jahren brauchen, bis es sich zersetzt. Zum Glück können kleine Änderungen unserer Alltagsgewohnheiten helfen. Eine wiederverwendbare Trinkflasche, der Verzicht auf Plastikstrohhalme und richtiges Recycling sind einfache Schritte. Wenn viele Menschen gemeinsam etwas ändern, wird die Wirkung auf die Umwelt deutlich.',
+    'environment-2':
+      'Manche Städte finden kreative Wege, grüner zu werden. Sie pflanzen Bäume an stark befahrenen Straßen, legen Parks auf alten Industrieflächen an und schaffen sichere Radwege. Diese Projekte verringern die Luftverschmutzung und helfen, die Straßen in heißen Sommern kühler zu halten. Auch sonst profitieren die Bewohner: Grünflächen regen dazu an, Sport zu treiben, die Nachbarn kennenzulernen und mehr Zeit draußen zu verbringen.',
   },
 }
 

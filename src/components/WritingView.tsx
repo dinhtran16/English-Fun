@@ -110,7 +110,7 @@ export function WritingView({ topic, vocab, settings }: Props) {
         <div className="practice-head">
           <div>
             <div className="meta">
-              <TopicIcon id={topic.id} size={15} /> {topicName} · {t.writing.name}
+              <TopicIcon id={topic.id} size={15} tinted /> {topicName} · {t.writing.name}
               <SourceTag passage={passage} />
             </div>
             <h1>{passage.title}</h1>

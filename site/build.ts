@@ -3,20 +3,14 @@
  * as static files. The React app itself lives under /app/.
  * Used by the `site-pages` plugin in vite.config.ts, both for `vite build` and the dev server.
  */
-import { BookOpen, Briefcase, Cpu, HeartPulse, House, Library, PenLine, Plane, Sparkles, Tag, type LucideIcon } from 'lucide-react'
+import { BookOpen, Library, PenLine, Sparkles } from 'lucide-react'
 import { PASSAGES } from '../src/data/passages.ts'
+import { toneClass, topicIconFor } from '../src/topicIcons.ts'
 import { POSTS, type Post } from './content/posts.ts'
 import { TOPIC_PAGES, type TopicContent } from './content/topics.ts'
 import { breadcrumbs, cta, esc, icon, OG_IMAGE, page, SITE, SITE_NAME, TRY_URL } from './layout.ts'
 
-const TOPIC_ICONS: Record<string, LucideIcon> = {
-  work: Briefcase,
-  travel: Plane,
-  technology: Cpu,
-  health: HeartPulse,
-  daily: House,
-}
-const topicIcon = (id: string, size = 20) => icon(TOPIC_ICONS[id] ?? Tag, size)
+const topicIcon = (id: string, size = 20) => icon(topicIconFor(id), size)
 const topicPath = (t: TopicContent) => `/chu-de/${t.slug}`
 const postPath = (p: Post) => `/blog/${p.slug}`
 /** Opens the app as a guest with this topic chosen. */
@@ -156,7 +150,7 @@ function home(): string {
         <p class="section-lead">Mỗi chủ đề có danh sách từ mẫu kèm phiên âm, câu ví dụ và một đoạn đọc có bản dịch.</p>
         <div class="topic-grid">
           ${TOPIC_PAGES.map(
-            (t) => `<a class="card topic-card" href="${topicPath(t)}">
+            (t) => `<a class="card topic-card ${toneClass(t.id)}" href="${topicPath(t)}">
             <span class="topic-icon">${topicIcon(t.id)}</span>
             <span class="topic-name">${t.name}</span>
             <span class="muted small">${t.words.length} từ mẫu</span>
@@ -216,7 +210,7 @@ function topicsIndex(): string {
       <div class="wrap section">
         <div class="topic-list">
           ${TOPIC_PAGES.map(
-            (t) => `<a class="card topic-row" href="${topicPath(t)}">
+            (t) => `<a class="card topic-row ${toneClass(t.id)}" href="${topicPath(t)}">
             <span class="topic-icon">${topicIcon(t.id)}</span>
             <span>
               <strong>${t.h1}</strong>
@@ -348,7 +342,7 @@ function topicPage(t: TopicContent): string {
         <div class="topic-grid">
           ${others
             .map(
-              (o) => `<a class="card topic-card" href="${topicPath(o)}">
+              (o) => `<a class="card topic-card ${toneClass(o.id)}" href="${topicPath(o)}">
             <span class="topic-icon">${topicIcon(o.id)}</span>
             <span class="topic-name">${o.name}</span>
           </a>`,

@@ -7,7 +7,20 @@ const pt: Messages = {
     text: 'O English Fun explica as palavras, traduz os textos e corrige o que você escreve neste idioma. Você pode mudar quando quiser.',
     label: 'Seu idioma',
   },
-  topics: { work: 'Trabalho', travel: 'Viagens', technology: 'Tecnologia', health: 'Saúde', daily: 'Dia a dia' },
+  topics: {
+    work: 'Trabalho',
+    travel: 'Viagens',
+    technology: 'Tecnologia',
+    health: 'Saúde',
+    daily: 'Dia a dia',
+    education: 'Educação',
+    food: 'Comida e bebida',
+    shopping: 'Compras',
+    family: 'Família e amigos',
+    sports: 'Esportes',
+    entertainment: 'Filmes e música',
+    environment: 'Meio ambiente',
+  },
   levels: { A2: 'Básico', B1: 'Intermediário', B2: 'Intermediário avançado', C1: 'Avançado' },
   nav: { practice: 'Praticar', current: 'Exercício atual', vocab: 'Minhas palavras', signIn: 'Entrar', signOut: 'Sair' },
   sync: { loading: 'Conectando...', synced: 'Sincronizado', local: 'Salvo neste dispositivo', error: 'Erro ao sincronizar, vamos tentar de novo' },
@@ -217,6 +230,34 @@ const pt: Messages = {
       'Cozinhar em casa virou um passatempo popular entre muitos jovens. Assim eles controlam os ingredientes e comem de forma mais saudável. Também é mais barato do que comer fora todos os dias. No começo, seguir uma receita pode parecer complicado, mas com a prática se torna relaxante. Dividir uma refeição caseira com amigos ou com a família é um dos prazeres simples da vida.',
     'daily-2':
       'Economizar dinheiro nem sempre é fácil, principalmente quando os preços não param de subir. Um bom primeiro passo é anotar seus gastos durante um mês para ver para onde vai o seu dinheiro. Muitas pessoas se surpreendem com quanto gastam em pequenas coisas como café e lanches. Depois de entender seus hábitos, você pode definir um orçamento realista e guardar um valor fixo todo mês para emergências.',
+    'education-1':
+      'Muitos adultos acham que estão velhos demais para aprender uma nova habilidade, mas pesquisas mostram que o cérebro continua mudando ao longo da vida. O maior obstáculo geralmente não é a idade, e sim a falta de tempo e de confiança. Definir uma pequena meta diária, como estudar quinze minutos, faz o progresso parecer possível. Os adultos também têm uma vantagem: podem relacionar o novo conhecimento com a própria experiência.',
+    'education-2':
+      'Faltando apenas duas semanas para a prova final, Mai decidiu mudar o jeito de estudar. Em vez de ler as anotações várias vezes, ela se testava com perguntas e explicava cada assunto em voz alta, como se estivesse ensinando uma amiga. Também fazia pequenas pausas a cada hora e ia dormir cedo. No dia da prova, estava nervosa, mas bem preparada.',
+    'food-1':
+      'Em muitas cidades asiáticas, a comida de rua faz parte do dia a dia. Logo cedo, os vendedores montam pequenas barracas na calçada e vendem tigelas de sopa fumegante, pão fresquinho e bebidas doces. Os preços são baixos, e os pratos muitas vezes são preparados na frente dos clientes. Para os visitantes, provar a comida de rua local é uma das melhores formas de conhecer uma cultura, desde que escolham barracas movimentadas e com ingredientes frescos.',
+    'food-2':
+      'O açúcar está escondido em muitos produtos que não consideramos doces, como molhos, pães e cereais matinais. Consumir açúcar demais pode levar ao ganho de peso e a problemas nos dentes. Os nutricionistas recomendam ler os rótulos com atenção e trocar os refrigerantes por água ou chá sem açúcar. Depois de algumas semanas, muitas pessoas percebem que o paladar muda e que comidas muito doces já não parecem tão atraentes.',
+    'shopping-1':
+      'As compras on-line mudaram a forma como as pessoas compram quase tudo. Com poucos cliques, os clientes podem comparar preços, ler avaliações e receber os produtos em casa. Por outro lado, também ficou mais fácil gastar dinheiro com coisas de que não precisamos de verdade. Antes de fazer um pedido, vale a pena conferir a política de devolução e se perguntar se você ainda vai querer o produto no mês que vem.',
+    'shopping-2':
+      'Todo sábado, Hoa vai à feira perto do apartamento dela. Ela prefere a feira ao supermercado porque as verduras são mais frescas e os vendedores a conhecem pelo nome. Pechinchar é comum por lá, mas ela sempre faz isso com educação e um sorriso. Ela leva as próprias sacolas de pano para reduzir o lixo plástico e costuma voltar com uma cesta cheia de frutas, ervas e flores.',
+    'family-1':
+      'Na família de Nam, o jantar de domingo é uma tradição que ninguém quer perder. Os avós, os pais e os primos se reúnem em uma casa, e todos ajudam a preparar a refeição. As crianças põem a mesa enquanto os adultos cozinham e conversam na cozinha. Durante o jantar, eles contam as novidades da semana e riem de histórias antigas. Para Nam, essas noites são a parte mais preciosa da semana.',
+    'family-2':
+      'À medida que envelhecemos, fica mais difícil manter contato com os velhos amigos. O trabalho, a família e as mudanças para outras cidades nos deixam com menos tempo livre. Mesmo assim, amizades fortes fazem bem para a saúde mental e física. Uma mensagem curta, uma ligação no aniversário ou um café uma vez por mês podem manter uma amizade viva. O mais importante não é com que frequência nos encontramos, mas fazer o esforço.',
+    'sports-1':
+      'Seis meses atrás, Tuan não conseguia correr mais de dez minutos sem parar. Ele decidiu se inscrever em uma corrida de cinco quilômetros para ter um objetivo claro. Treinou três vezes por semana e aumentou a distância aos poucos. No dia da prova, milhares de corredores tomaram as ruas e o público torcia animado. Tuan não chegou em primeiro, mas cruzar a linha de chegada o deixou muito orgulhoso.',
+    'sports-2':
+      'Praticar um esporte coletivo como futebol ou vôlei oferece muito mais do que exercício físico. Os jogadores aprendem a se comunicar, a confiar uns nos outros e a aceitar tanto a vitória quanto a derrota. Crianças que entram em um time costumam desenvolver melhores habilidades sociais e mais confiança. Para os adultos, uma partida por semana pode ser uma ótima forma de aliviar o estresse depois do trabalho e de fazer novos amigos fora do escritório.',
+    'entertainment-1':
+      'Assistir a filmes em inglês é uma forma divertida de melhorar a compreensão oral. No começo, ajuda ativar as legendas no seu próprio idioma para acompanhar a história. Depois, você pode trocar para legendas em inglês e, por fim, tentar assistir sem nenhuma. Escolher um filme que você já viu facilita, porque você pode se concentrar nas palavras e expressões em vez do enredo.',
+    'entertainment-2':
+      'Os serviços de streaming mudaram a forma como assistimos à televisão e ouvimos música. Em vez de esperar por um episódio por semana, os espectadores agora podem assistir a uma série inteira em um fim de semana. Essa praticidade faz sucesso, mas algumas pessoas temem que a escolha infinita torne mais difícil decidir o que assistir. Outras sentem falta da empolgação de comentar um episódio novo com os amigos no dia seguinte à exibição.',
+    'environment-1':
+      'Todos os anos, milhões de toneladas de plástico vão parar em rios e oceanos, onde prejudicam peixes, aves e outros animais. O plástico pode levar centenas de anos para se decompor. Felizmente, pequenas mudanças nos hábitos diários podem ajudar. Levar uma garrafa de água reutilizável, recusar canudos de plástico e reciclar corretamente são passos simples. Quando muitas pessoas fazem essas mudanças juntas, o impacto no meio ambiente se torna significativo.',
+    'environment-2':
+      'Algumas cidades estão encontrando formas criativas de ficar mais verdes. Elas plantam árvores ao longo de ruas movimentadas, constroem parques em antigas áreas industriais e criam ciclovias seguras. Esses projetos reduzem a poluição do ar e ajudam a manter as ruas mais frescas nos verões quentes. Os moradores também se beneficiam de outras formas: os espaços verdes incentivam as pessoas a se exercitar, conhecer os vizinhos e passar mais tempo ao ar livre.',
   },
 }
 

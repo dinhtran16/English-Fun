@@ -79,7 +79,7 @@ export function ReadingView({ topic, vocab, settings }: Props) {
         <div className="practice-head">
           <div>
             <div className="meta">
-              <TopicIcon id={topic.id} size={15} /> {topicName} · {t.reading.name}
+              <TopicIcon id={topic.id} size={15} tinted /> {topicName} · {t.reading.name}
               <SourceTag passage={passage} />
             </div>
             <h1>{passage.title}</h1>

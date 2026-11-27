@@ -178,13 +178,47 @@ main.container { padding-top: 28px; padding-bottom: 64px; }
   .sync-text, .user-name, .brand-name { display: none; }
 }
 
+/* ============ Topic tones ============
+   Each topic has its own accent color (TOPICS[].tone in src/data/passages.ts).
+   The class sets --tone; icon tiles tint their background and icon with it. */
+.tone-blue { --tone: #2563eb; }
+.tone-cyan { --tone: #0e7490; }
+.tone-violet { --tone: #7c3aed; }
+.tone-rose { --tone: #e11d48; }
+.tone-amber { --tone: #b45309; }
+.tone-indigo { --tone: #4f46e5; }
+.tone-orange { --tone: #ea580c; }
+.tone-teal { --tone: #0f766e; }
+.tone-pink { --tone: #db2777; }
+.tone-lime { --tone: #4d7c0f; }
+.tone-fuchsia { --tone: #c026d3; }
+.tone-green { --tone: #15803d; }
+.tone-slate { --tone: #475467; }
+@media (prefers-color-scheme: dark) {
+  .tone-blue { --tone: #60a5fa; }
+  .tone-cyan { --tone: #22d3ee; }
+  .tone-violet { --tone: #a78bfa; }
+  .tone-rose { --tone: #fb7185; }
+  .tone-amber { --tone: #fbbf24; }
+  .tone-indigo { --tone: #818cf8; }
+  .tone-orange { --tone: #fb923c; }
+  .tone-teal { --tone: #2dd4bf; }
+  .tone-pink { --tone: #f472b6; }
+  .tone-lime { --tone: #a3e635; }
+  .tone-fuchsia { --tone: #e879f9; }
+  .tone-green { --tone: #4ade80; }
+  .tone-slate { --tone: #94a0b4; }
+}
+
 /* ============ Home ============ */
 .topic-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
-.topic-card { flex-direction: column; align-items: flex-start; gap: 12px; min-height: 0; padding: 16px; border-radius: var(--radius); text-align: left; color: var(--text); font-weight: 600; border-color: var(--border); box-shadow: var(--shadow); }
-.topic-card.selected { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); background: var(--surface); }
-.topic-icon { width: 38px; height: 38px; border-radius: 10px; display: grid; place-items: center; background: var(--surface-2); color: var(--text-2); }
-.topic-card.selected .topic-icon { background: var(--accent); color: #fff; }
+.topic-card { flex-direction: column; align-items: flex-start; justify-content: flex-start; gap: 12px; min-height: 0; padding: 16px; border-radius: var(--radius); text-align: left; color: var(--text); font-weight: 600; border-color: var(--border); box-shadow: var(--shadow); }
+.topic-card:hover:not(:disabled) { border-color: color-mix(in srgb, var(--tone, var(--accent)) 45%, var(--border)); background: var(--surface); }
+.topic-card.selected { border-color: var(--tone, var(--accent)); box-shadow: 0 0 0 3px color-mix(in srgb, var(--tone, var(--accent)) 18%, transparent); background: var(--surface); }
+.topic-icon { width: 38px; height: 38px; border-radius: 10px; display: grid; place-items: center; background: color-mix(in srgb, var(--tone, var(--muted)) 12%, var(--surface)); color: var(--tone, var(--text-2)); transition: background 0.15s, color 0.15s; }
+.topic-card.selected .topic-icon { background: var(--tone, var(--accent)); color: #fff; }
 @media (prefers-color-scheme: dark) { .topic-card.selected .topic-icon { color: #0c0e12; } }
+.topic-glyph { color: var(--tone); flex: none; }
 .segmented { display: inline-flex; padding: 3px; gap: 2px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 10px; flex-wrap: wrap; }
 .segmented button { border: none; background: none; box-shadow: none; min-height: 32px; color: var(--muted); }
 .segmented button.active { background: var(--surface); color: var(--text); box-shadow: var(--shadow); }
