@@ -159,7 +159,7 @@ export function WritingView({ topic, vocab, settings }: Props) {
           style={{ marginTop: 12 }}
           value={translation}
           onChange={(e) => setTranslation(e.target.value)}
-          placeholder="Write your English translation here..."
+          placeholder={t.writing.answerPlaceholder}
           rows={7}
           spellCheck
         />
@@ -175,7 +175,7 @@ export function WritingView({ topic, vocab, settings }: Props) {
             <textarea
               value={ownSentences}
               onChange={(e) => setOwnSentences(e.target.value)}
-              placeholder="Your own sentences..."
+              placeholder={t.writing.ownPlaceholder}
               rows={3}
               spellCheck
             />

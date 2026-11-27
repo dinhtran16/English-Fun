@@ -76,6 +76,8 @@ const zh: Messages = {
     step1: '把这段文字翻译成英文',
     step2: '用还没用到的单词再写 2-3 句',
     optional: '（可选）',
+    answerPlaceholder: '在这里写下你的英文译文...',
+    ownPlaceholder: '你自己的句子...',
     submitAi: '提交并批改',
     submit: '检查',
     grading: '正在批改...',

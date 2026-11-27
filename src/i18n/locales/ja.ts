@@ -78,6 +78,8 @@ const ja: Messages = {
     step1: '文章を英語に翻訳しましょう',
     step2: 'まだ使っていない単語で、あと2〜3文書きましょう',
     optional: '（任意）',
+    answerPlaceholder: 'ここに英訳を書きましょう...',
+    ownPlaceholder: '自分で作った文...',
     submitAi: '提出して添削',
     submit: 'チェック',
     grading: '添削中...',

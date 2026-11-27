@@ -95,6 +95,8 @@ const vi: Messages = {
     step1: 'Dịch đoạn văn sang tiếng Anh',
     step2: 'Viết thêm 2-3 câu dùng các từ còn thiếu',
     optional: '(không bắt buộc)',
+    answerPlaceholder: 'Viết bản dịch tiếng Anh của bạn ở đây...',
+    ownPlaceholder: 'Câu của bạn...',
     submitAi: 'Nộp bài và chấm',
     submit: 'Kiểm tra',
     grading: 'Đang chấm...',

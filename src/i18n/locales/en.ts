@@ -99,6 +99,8 @@ const en = {
     step1: 'Translate the passage into English',
     step2: 'Write 2-3 more sentences with the words you haven’t used',
     optional: '(optional)',
+    answerPlaceholder: 'Write your English translation here...',
+    ownPlaceholder: 'Your own sentences...',
     submitAi: 'Submit for feedback',
     submit: 'Check',
     grading: 'Checking...',

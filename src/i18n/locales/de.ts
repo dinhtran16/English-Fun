@@ -78,6 +78,8 @@ const de: Messages = {
     step1: 'Übersetze den Text ins Englische',
     step2: 'Schreibe 2-3 weitere Sätze mit den fehlenden Wörtern',
     optional: '(optional)',
+    answerPlaceholder: 'Schreib hier deine englische Übersetzung...',
+    ownPlaceholder: 'Deine eigenen Sätze...',
     submitAi: 'Zur Korrektur abgeben',
     submit: 'Prüfen',
     grading: 'Wird geprüft...',

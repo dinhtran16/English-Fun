@@ -78,6 +78,8 @@ const fr: Messages = {
     step1: 'Traduisez le texte en anglais',
     step2: 'Écrivez 2-3 phrases de plus avec les mots manquants',
     optional: '(facultatif)',
+    answerPlaceholder: 'Écrivez ici votre traduction en anglais...',
+    ownPlaceholder: 'Vos propres phrases...',
     submitAi: 'Envoyer pour correction',
     submit: 'Vérifier',
     grading: 'Correction...',
