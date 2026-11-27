@@ -10,7 +10,7 @@ export const SITE = '__SITE_URL__'
 export const SITE_NAME = 'English Fun'
 export const OG_IMAGE = `${SITE}/img/og-image.jpg`
 /** Where "try it" buttons go: the app in guest mode, which only uses built-in content (no AI cost). */
-export const TRY_URL = '/app/?guest=1'
+export const TRY_URL = '/app/?guest=1&lang=vi'
 
 export const esc = (s: string) =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')

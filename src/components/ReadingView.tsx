@@ -1,9 +1,10 @@
 import { Eye, EyeOff, Loader2, RefreshCw, Sparkles, Volume2 } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { AiUnavailable, generatePassage } from '../ai'
+import { fallbackNotice, generatePassage } from '../ai'
 import { randomPassage } from '../data/passages'
 import { useDraft } from '../persist'
 import { speak } from '../dictionary'
+import { useI18n, useTranslationOf } from '../i18n'
 import type { VocabStore } from '../storage'
 import type { Passage, PracticeSettings, Topic } from '../types'
 import { TopicIcon } from './icons'
@@ -23,6 +24,8 @@ const builtin = (topicId: string, excludeId?: string): Passage => ({
 })
 
 export function ReadingView({ topic, vocab, settings }: Props) {
+  const { t } = useI18n()
+  const translationOf = useTranslationOf()
   const [passage, setPassage] = useDraft<Passage | null>('reading:passage', () =>
     settings.aiEnabled ? null : builtin(topic.id),
   )
@@ -44,31 +47,30 @@ export function ReadingView({ topic, vocab, settings }: Props) {
       }
       setPassage(null)
       try {
-        setPassage(await generatePassage(topic, 'reading', settings.level))
+        setPassage(await generatePassage(topic, 'reading', settings.level, settings.lang))
       } catch (err) {
-        setNotice(err instanceof AiUnavailable ? err.message : 'AI gặp lỗi, đang dùng bài có sẵn.')
+        setNotice(fallbackNotice(t, err))
         setPassage(builtin(topic.id, excludeId))
       }
     },
-    [settings.aiEnabled, settings.level, topic, setPassage, setShowRef, setTranslation],
+    [settings.aiEnabled, settings.level, settings.lang, topic, t, setPassage, setShowRef, setTranslation],
   )
 
   // Generate the first passage once, unless one was restored from a draft.
   useEffect(() => {
     if (started.current) return
     started.current = true
-    generatePassage(topic, 'reading', settings.level)
+    generatePassage(topic, 'reading', settings.level, settings.lang)
       .then(setPassage)
       .catch((err) => {
-        setNotice(err instanceof AiUnavailable ? err.message : 'AI gặp lỗi, đang dùng bài có sẵn.')
+        setNotice(fallbackNotice(t, err))
         setPassage(builtin(topic.id))
       })
-  }, [settings.level, topic, setPassage])
+  }, [settings.level, settings.lang, topic, t, setPassage])
 
+  const topicName = t.topics[topic.id] ?? topic.name
   if (!passage) {
-    return (
-      <LoadingPassage text={`Đang tạo đoạn văn mới về ${topic.name.toLowerCase()} · trình độ ${settings.level}`} />
-    )
+    return <LoadingPassage text={t.reading.loading(topicName, settings.level)} />
   }
 
   return (
@@ -77,17 +79,17 @@ export function ReadingView({ topic, vocab, settings }: Props) {
         <div className="practice-head">
           <div>
             <div className="meta">
-              <TopicIcon id={topic.id} size={15} /> {topic.name} · Đọc hiểu
+              <TopicIcon id={topic.id} size={15} /> {topicName} · {t.reading.name}
               <SourceTag passage={passage} />
             </div>
             <h1>{passage.title}</h1>
           </div>
           <div className="row">
-            <button onClick={() => speak(passage.en)} title="Nghe cả đoạn">
-              <Volume2 size={16} /> Nghe
+            <button onClick={() => speak(passage.en)} title={t.reading.listenAll}>
+              <Volume2 size={16} /> {t.reading.listen}
             </button>
             <button onClick={() => load(passage.id)}>
-              <RefreshCw size={16} /> Đoạn khác
+              <RefreshCw size={16} /> {t.reading.another}
             </button>
           </div>
         </div>
@@ -99,9 +101,9 @@ export function ReadingView({ topic, vocab, settings }: Props) {
         <div className="legend">
           <span>
             <span className="sw" />
-            Đã có trong kho
+            {t.reading.legendKnown}
           </span>
-          <span>Bấm hoặc kéo một từ sang bảng bên phải để tra nghĩa</span>
+          <span>{t.reading.legendHint}</span>
         </div>
 
         <div className="toolbar">
@@ -111,11 +113,11 @@ export function ReadingView({ topic, vocab, settings }: Props) {
               checked={translating}
               onChange={(e) => setTranslating(e.target.checked)}
             />
-            Viết bản dịch của tôi
+            {t.reading.writeMine}
           </label>
           <button onClick={() => setShowRef((v) => !v)}>
             {showRef ? <EyeOff size={16} /> : <Eye size={16} />}
-            {showRef ? 'Ẩn bản dịch' : 'Xem bản dịch'}
+            {showRef ? t.reading.hideReference : t.reading.showReference}
           </button>
         </div>
 
@@ -124,14 +126,14 @@ export function ReadingView({ topic, vocab, settings }: Props) {
             <textarea
               value={translation}
               onChange={(e) => setTranslation(e.target.value)}
-              placeholder="Viết bản dịch tiếng Việt của bạn..."
+              placeholder={t.reading.translationPlaceholder}
               rows={6}
             />
           )}
           {showRef && (
             <div className="reference">
-              <div className="eyebrow">Bản dịch tham khảo</div>
-              <p>{passage.vi}</p>
+              <div className="eyebrow">{t.reading.reference}</div>
+              <p>{translationOf(passage)}</p>
             </div>
           )}
         </div>
@@ -149,12 +151,13 @@ export function ReadingView({ topic, vocab, settings }: Props) {
 }
 
 export function SourceTag({ passage }: { passage: Passage }) {
+  const { t } = useI18n()
   return passage.source === 'ai' ? (
     <span className="badge ai">
-      <Sparkles size={12} /> AI tạo
+      <Sparkles size={12} /> {t.practice.aiBadge}
     </span>
   ) : (
-    <span className="badge">Bài có sẵn</span>
+    <span className="badge">{t.practice.builtinBadge}</span>
   )
 }
 

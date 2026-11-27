@@ -1,15 +1,17 @@
 /**
  * AI features, backed by DeepSeek's chat completions API (JSON output mode).
  *
- *   POST /api/ai/passage  { topicId, topicName, mode: 'reading'|'writing', level, targetWords? }
- *                         -> { passage: { id, topicId, title, en, vi, source: 'ai' }, remaining }
- *   POST /api/ai/grade    { vi, reference, answer, targetWords? }
+ *   POST /api/ai/passage  { topicId, topicName, mode: 'reading'|'writing', level, lang, targetWords? }
+ *                         -> { passage: { id, topicId, title, en, tr, lang, source: 'ai' }, remaining }
+ *   POST /api/ai/grade    { source, reference, answer, lang, targetWords? }
  *                         -> { feedback: Feedback, remaining }
  *
- * Both need a signed-in user and count towards a per-user daily limit.
+ * `lang` is the learner's own language (see src/i18n/languages.ts): translations and
+ * feedback are written in it. Both need a signed-in user and count towards a per-user daily limit.
  */
 import { currentUser } from './auth'
 import { ensureSchema, json, type Env } from './http'
+import { isLang, languageInfo, type LangCode } from '../src/i18n/languages'
 
 const DEFAULT_BASE_URL = 'https://api.deepseek.com'
 const DEFAULT_MODEL = 'deepseek-chat'
@@ -121,6 +123,9 @@ function cleanTargets(value: unknown): TargetWord[] {
 
 const str = (v: unknown, max: number) => (typeof v === 'string' ? v.slice(0, max) : '')
 
+/** The learner's language from the request; Vietnamese for older clients that don't send one. */
+const langOf = (v: unknown): LangCode => (isLang(v) ? v : 'vi')
+
 async function generatePassage(request: Request, env: Env, user: string): Promise<Response> {
   const body = (await request.json().catch(() => ({}))) as Record<string, unknown>
   const topicId = str(body.topicId, 40)
@@ -128,6 +133,8 @@ async function generatePassage(request: Request, env: Env, user: string): Promis
   const mode = body.mode === 'writing' ? 'writing' : 'reading'
   const level = LEVELS.includes(body.level as (typeof LEVELS)[number]) ? (body.level as string) : 'B1'
   const targets = cleanTargets(body.targetWords)
+  const lang = langOf(body.lang)
+  const language = languageInfo(lang).english
   if (!topicId) return json({ error: 'missing_topic' }, 400)
 
   const recent = await env.DB.prepare(
@@ -147,20 +154,20 @@ async function generatePassage(request: Request, env: Env, user: string): Promis
 
   const purpose =
     mode === 'writing'
-      ? 'The learner will see only the Vietnamese version and must translate it into English, so the Vietnamese must be natural and its meaning must map clearly onto the English passage.'
+      ? `The learner will see only the ${language} version and must translate it into English, so the ${language} must be natural and its meaning must map clearly onto the English passage.`
       : 'The learner will read the English passage and may try to translate it.'
 
-  const result = await chatJson<{ title?: string; en?: string; vi?: string; usedWords?: string[] }>(
+  const result = await chatJson<{ title?: string; en?: string; tr?: string; usedWords?: string[] }>(
     env,
     [
       {
         role: 'system',
         content:
-          'You write short, engaging English practice passages for an adult Vietnamese learner. ' +
+          `You write short, engaging English practice passages for an adult learner whose native language is ${language}. ` +
           'Write about realistic adult life (work, travel, technology, health, money, relationships...). ' +
           'Avoid lists and dialogues; write one coherent paragraph. ' +
-          'Reply with a json object only: {"title": string, "en": string, "vi": string, "usedWords": string[]}. ' +
-          '"vi" is a faithful, natural Vietnamese translation of "en".',
+          'Reply with a json object only: {"title": string, "en": string, "tr": string, "usedWords": string[]}. ' +
+          `"title" is in English. "tr" is a faithful, natural ${language} translation of "en".`,
       },
       {
         role: 'user',
@@ -181,14 +188,15 @@ async function generatePassage(request: Request, env: Env, user: string): Promis
   )
 
   const en = str(result.en, 3000).trim()
-  const vi = str(result.vi, 4000).trim()
-  if (!en || !vi) throw new AiError('ai_bad_json')
+  const tr = str(result.tr, 4000).trim()
+  if (!en || !tr) throw new AiError('ai_bad_json')
   const passage = {
     id: crypto.randomUUID(),
     topicId,
     title: str(result.title, 120).trim() || topicName,
     en,
-    vi,
+    tr,
+    lang,
     level,
     usedWords: Array.isArray(result.usedWords) ? result.usedWords.filter((w) => typeof w === 'string') : [],
     source: 'ai' as const,
@@ -211,11 +219,13 @@ export interface Feedback {
 
 async function grade(request: Request, env: Env, user: string): Promise<Response> {
   const body = (await request.json().catch(() => ({}))) as Record<string, unknown>
-  const vi = str(body.vi, 4000)
+  // `vi` is the field name older clients send.
+  const source = str(body.source ?? body.vi, 4000)
   const reference = str(body.reference, 3000)
   const answer = str(body.answer, 4000).trim()
   const targets = cleanTargets(body.targetWords)
-  if (!vi || !answer) return json({ error: 'missing_fields' }, 400)
+  const language = languageInfo(langOf(body.lang)).english
+  if (!source || !answer) return json({ error: 'missing_fields' }, 400)
 
   const remaining = await takeQuota(env, user)
   const raw = await chatJson<Partial<Feedback>>(
@@ -224,10 +234,10 @@ async function grade(request: Request, env: Env, user: string): Promise<Response
       {
         role: 'system',
         content:
-          'You are a kind but precise English teacher for an adult Vietnamese learner. ' +
-          'Grade the learner\'s English translation of a Vietnamese passage. Judge meaning, grammar, word choice and naturalness; ' +
+          `You are a kind but precise English teacher for an adult learner whose native language is ${language}. ` +
+          `Grade the learner's English translation of a ${language} passage. Judge meaning, grammar, word choice and naturalness; ` +
           'a different but correct wording is fine and must not be penalised. ' +
-          'Write "summary", "explanation" and "note" in Vietnamese; quote English as English. ' +
+          `Write "summary", "explanation" and "note" in ${language}; quote English as English. ` +
           'Reply with a json object only: {"score": number 0-10, "summary": string, ' +
           '"corrections": [{"original": string, "suggestion": string, "explanation": string}], ' +
           '"improved": string, "wordNotes": [{"word": string, "used": boolean, "note": string}]}. ' +
@@ -237,7 +247,7 @@ async function grade(request: Request, env: Env, user: string): Promise<Response
       {
         role: 'user',
         content: [
-          `Vietnamese passage:\n${vi}`,
+          `${language} passage:\n${source}`,
           reference ? `A reference translation (one possible answer):\n${reference}` : '',
           targets.length ? `Target words: ${targets.map((t) => t.word).join(', ')}` : 'Target words: none',
           `Learner's translation:\n${answer}`,

@@ -1,28 +1,25 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { checkSession, signOut, type AuthState } from './auth'
+import { checkSession, saveLanguage, signOut, type AuthState } from './auth'
 import { ArrowRight, BookOpen, Library, LogIn, LogOut, PenLine } from 'lucide-react'
 import { AuthScreen } from './components/AuthScreen'
+import { LanguagePicker, LanguageSelect } from './components/LanguagePicker'
 import { LogoMark, TopicIcon } from './components/icons'
 import { ReadingView } from './components/ReadingView'
 import { VocabView } from './components/VocabView'
 import { WritingView } from './components/WritingView'
 import { TOPICS } from './data/passages'
+import { useI18n, type LangCode } from './i18n'
 import { clearDrafts, useDraft } from './persist'
 import { useVocab, type SyncStatus } from './storage'
 import type { Level, PracticeSettings, Skill, Topic } from './types'
 
 const LEVEL_KEY = 'english-fun:level'
-const LEVELS: { id: Level; label: string }[] = [
-  { id: 'A2', label: 'Sơ cấp' },
-  { id: 'B1', label: 'Trung cấp' },
-  { id: 'B2', label: 'Trung cao' },
-  { id: 'C1', label: 'Nâng cao' },
-]
+const LEVELS: Level[] = ['A2', 'B1', 'B2', 'C1']
 
 function readLevel(): Level {
   try {
     const v = localStorage.getItem(LEVEL_KEY)
-    if (LEVELS.some((l) => l.id === v)) return v as Level
+    if (LEVELS.includes(v as Level)) return v as Level
   } catch {
     // ignore
   }
@@ -61,6 +58,7 @@ interface Session {
 }
 
 export default function App() {
+  const { lang, t, setLang } = useI18n()
   const [auth, setAuth] = useState<AuthState>({ kind: 'checking' })
   const user = auth.kind === 'signed-in' ? auth.user : null
   const vocab = useVocab(user)
@@ -68,7 +66,35 @@ export default function App() {
   const [screen, setScreen] = useState<Screen>(() => ({ name: session ? 'practice' : 'home' }))
   const [topic, setTopic] = useState<Topic | null>(null)
   const [level, setLevel] = useState<Level>(readLevel)
-  const settings = useMemo<PracticeSettings>(() => ({ aiEnabled: !!user, level }), [user, level])
+  const settings = useMemo<PracticeSettings>(
+    () => ({ aiEnabled: !!user, level, lang: lang ?? 'vi' }),
+    [user, level, lang],
+  )
+
+  /**
+   * After signing in, the language saved on the account wins. Accounts from before the app
+   * had other languages have none saved: they keep Vietnamese (or the language chosen here).
+   */
+  const signedIn = (u: string, accountLang: LangCode | null) => {
+    if (accountLang) {
+      if (accountLang !== lang) setLang(accountLang)
+    } else {
+      const l = lang ?? 'vi'
+      if (!lang) setLang(l)
+      saveLanguage(l)
+    }
+    setAuth({ kind: 'signed-in', user: u, lang: accountLang })
+  }
+
+  /** A new language restarts the exercise, since its translation is in the old language. */
+  const changeLanguage = (l: LangCode) => {
+    if (user) saveLanguage(l)
+    if (session) {
+      clearDrafts()
+      setSession(null)
+      setScreen((s) => (s.name === 'practice' ? { name: 'home' } : s))
+    }
+  }
 
   const chooseLevel = (l: Level) => {
     setLevel(l)
@@ -83,7 +109,12 @@ export default function App() {
   if (entry.current === null) entry.current = readEntryLink()
 
   useEffect(() => {
-    checkSession().then((a) => setAuth(a.kind === 'signed-out' && entry.current?.guest ? { kind: 'guest' } : a))
+    checkSession().then((a) => {
+      if (a.kind === 'signed-in') signedIn(a.user, a.lang)
+      else setAuth(a.kind === 'signed-out' && entry.current?.guest ? { kind: 'guest' } : a)
+    })
+    // Runs once on start; signedIn only reads the language chosen so far.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Apply the topic and skill from the link once the app is ready.
@@ -109,13 +140,17 @@ export default function App() {
   }
 
   if (auth.kind === 'checking') return <div className="app" />
+  if (!lang) {
+    return (
+      <div className="app auth-wrap">
+        <LanguagePicker />
+      </div>
+    )
+  }
   if (auth.kind === 'signed-out') {
     return (
       <div className="app auth-wrap">
-        <AuthScreen
-          onSignedIn={(u) => setAuth({ kind: 'signed-in', user: u })}
-          onGuest={() => setAuth({ kind: 'guest' })}
-        />
+        <AuthScreen onSignedIn={signedIn} onGuest={() => setAuth({ kind: 'guest' })} />
       </div>
     )
   }
@@ -142,7 +177,7 @@ export default function App() {
               className={`tab ${screen.name === 'home' ? 'active' : ''}`}
               onClick={() => setScreen({ name: 'home' })}
             >
-              Luyện tập
+              {t.nav.practice}
             </button>
             {session && (
               <button
@@ -150,17 +185,18 @@ export default function App() {
                 onClick={() => setScreen({ name: 'practice' })}
               >
                 {session.skill === 'reading' ? <BookOpen size={15} /> : <PenLine size={15} />}
-                Bài đang làm
+                {t.nav.current}
               </button>
             )}
             <button
               className={`tab ${screen.name === 'vocab' ? 'active' : ''}`}
               onClick={() => setScreen({ name: 'vocab' })}
             >
-              Kho từ <span className="count">{vocab.words.length}</span>
+              {t.nav.vocab} <span className="count">{vocab.words.length}</span>
             </button>
           </nav>
           <div className="topbar-right">
+            <LanguageSelect onChange={changeLanguage} />
             <SyncBadge status={vocab.status} user={user} />
             {user && (
               <div className="user-menu">
@@ -168,14 +204,14 @@ export default function App() {
                   {user.slice(0, 1)}
                 </span>
                 <span className="user-name">{user}</span>
-                <button className="icon" onClick={logout} title="Đăng xuất" aria-label="Đăng xuất">
+                <button className="icon" onClick={logout} title={t.nav.signOut} aria-label={t.nav.signOut}>
                   <LogOut size={16} />
                 </button>
               </div>
             )}
             {auth.kind === 'guest' && (
               <button className="small" onClick={() => setAuth({ kind: 'signed-out' })}>
-                <LogIn size={15} /> Đăng nhập
+                <LogIn size={15} /> {t.nav.signIn}
               </button>
             )}
           </div>
@@ -187,66 +223,62 @@ export default function App() {
           <section className="main home">
             <div className="page-head">
               <div>
-                <h1>{user ? `Chào ${user}, hôm nay luyện gì?` : 'Hôm nay bạn muốn luyện gì?'}</h1>
-                <p>
-                  {vocab.words.length > 0
-                    ? `Kho từ có ${vocab.words.length} từ${toReview ? `, ${toReview} từ đang chờ ôn` : ''}.`
-                    : 'Chọn chủ đề và kỹ năng để bắt đầu. Từ mới bạn lưu sẽ vào kho từ.'}
-                </p>
+                <h1>{user ? t.home.greeting(user) : t.home.title}</h1>
+                <p>{vocab.words.length > 0 ? t.home.bankSummary(vocab.words.length, toReview) : t.home.empty}</p>
               </div>
               {toReview > 0 && (
                 <button onClick={() => setScreen({ name: 'vocab' })}>
-                  <Library size={16} /> Ôn {toReview} từ
+                  <Library size={16} /> {t.home.reviewButton(toReview)}
                 </button>
               )}
             </div>
 
             <div className="section">
-              <div className="eyebrow">Chủ đề</div>
+              <div className="eyebrow">{t.home.topic}</div>
               <div className="topic-grid">
-                {TOPICS.map((t) => (
+                {TOPICS.map((tp) => (
                   <button
-                    key={t.id}
-                    className={`topic-card ${topic?.id === t.id ? 'selected' : ''}`}
-                    onClick={() => setTopic(t)}
-                    aria-pressed={topic?.id === t.id}
+                    key={tp.id}
+                    className={`topic-card ${topic?.id === tp.id ? 'selected' : ''}`}
+                    onClick={() => setTopic(tp)}
+                    aria-pressed={topic?.id === tp.id}
                   >
                     <span className="topic-icon">
-                      <TopicIcon id={t.id} />
+                      <TopicIcon id={tp.id} />
                     </span>
-                    {t.name}
+                    {t.topics[tp.id] ?? tp.name}
                   </button>
                 ))}
               </div>
             </div>
 
             <div className="section">
-              <div className="eyebrow">Trình độ</div>
+              <div className="eyebrow">{t.home.level}</div>
               <div className="segmented" role="radiogroup">
                 {LEVELS.map((l) => (
                   <button
-                    key={l.id}
-                    className={level === l.id ? 'active' : ''}
-                    onClick={() => chooseLevel(l.id)}
+                    key={l}
+                    className={level === l ? 'active' : ''}
+                    onClick={() => chooseLevel(l)}
                     role="radio"
-                    aria-checked={level === l.id}
+                    aria-checked={level === l}
                   >
-                    {l.id} <span className="sub">{l.label}</span>
+                    {l} <span className="sub">{t.levels[l]}</span>
                   </button>
                 ))}
               </div>
             </div>
 
             <div className="section">
-              <div className="eyebrow">Kỹ năng</div>
+              <div className="eyebrow">{t.home.skill}</div>
               <div className="skill-grid">
                 <button className="skill-card" disabled={!topic} onClick={() => start('reading')}>
                   <span className="skill-icon">
                     <BookOpen size={22} />
                   </span>
                   <span className="skill-body">
-                    <span className="skill-title">Đọc hiểu</span>
-                    <span className="skill-desc">Đọc một đoạn văn mới, lưu từ chưa biết vào kho</span>
+                    <span className="skill-title">{t.home.readingTitle}</span>
+                    <span className="skill-desc">{t.home.readingText}</span>
                   </span>
                   <ArrowRight size={18} className="go" />
                 </button>
@@ -255,17 +287,16 @@ export default function App() {
                     <PenLine size={22} />
                   </span>
                   <span className="skill-body">
-                    <span className="skill-title">Viết và dịch</span>
-                    <span className="skill-desc">Dịch sang tiếng Anh, luyện dùng từ trong kho</span>
+                    <span className="skill-title">{t.home.writingTitle}</span>
+                    <span className="skill-desc">{t.home.writingText}</span>
                   </span>
                   <ArrowRight size={18} className="go" />
                 </button>
               </div>
-              {!topic && <p className="hint" style={{ marginTop: 10 }}>Chọn một chủ đề để bắt đầu.</p>}
+              {!topic && <p className="hint" style={{ marginTop: 10 }}>{t.home.pickTopic}</p>}
               {!user && (
                 <div className="callout info" style={{ marginTop: 14 }}>
-                  Đăng nhập để AI tạo đoạn văn mới theo trình độ và chấm bài viết. Khi chưa đăng nhập, app dùng
-                  các bài có sẵn.
+                  {t.home.signInForAi}
                 </div>
               )}
             </div>
@@ -289,12 +320,8 @@ export default function App() {
 }
 
 function SyncBadge({ status, user }: { status: SyncStatus; user: string | null }) {
-  const label = {
-    loading: 'Đang kết nối...',
-    synced: 'Đã đồng bộ',
-    local: 'Lưu trên máy này',
-    error: 'Lỗi đồng bộ, sẽ thử lại',
-  }[status]
+  const { t } = useI18n()
+  const label = t.sync[status]
   return (
     <span className={`sync ${status}`} title={user ? `${label} (${user})` : label}>
       <span className="dot" />

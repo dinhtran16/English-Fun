@@ -1,20 +1,11 @@
+import { isLang, type LangCode } from './i18n/languages'
+
 export type AuthState =
   | { kind: 'checking' }
   | { kind: 'offline' } // no server (e.g. npm run dev): local-only mode
   | { kind: 'signed-out' }
   | { kind: 'guest' } // chose to use the app without an account
-  | { kind: 'signed-in'; user: string }
-
-const ERRORS: Record<string, string> = {
-  invalid_username: 'Tên đăng nhập gồm 3-32 ký tự: chữ thường, số, dấu chấm, gạch ngang hoặc gạch dưới.',
-  weak_password: 'Mật khẩu cần ít nhất 8 ký tự.',
-  username_taken: 'Tên đăng nhập này đã có người dùng.',
-  wrong_credentials: 'Sai tên đăng nhập hoặc mật khẩu.',
-  signup_disabled: 'Hiện chưa mở đăng ký tài khoản mới.',
-  captcha_failed: 'Chưa xác minh được bạn là người thật. Hãy làm lại bước xác minh.',
-  rate_limited: 'Bạn thử quá nhiều lần. Hãy đợi một lát rồi thử lại.',
-  locked: 'Tài khoản tạm khoá 15 phút vì nhập sai mật khẩu nhiều lần.',
-}
+  | { kind: 'signed-in'; user: string; lang: LangCode | null }
 
 async function call(path: string, method: string, body?: unknown) {
   const res = await fetch(`/api/auth/${path}`, {
@@ -32,29 +23,48 @@ export async function checkSession(): Promise<AuthState> {
   try {
     const { res, data, isJson } = await call('me', 'GET')
     if (!isJson) return { kind: 'offline' }
-    if (res.ok) return { kind: 'signed-in', user: data.user }
+    if (res.ok) return { kind: 'signed-in', user: data.user, lang: isLang(data.lang) ? data.lang : null }
     return res.status === 401 ? { kind: 'signed-out' } : { kind: 'offline' }
   } catch {
     return { kind: 'offline' }
   }
 }
 
-/** Signs in or up; returns the username, or throws an Error with a Vietnamese message. */
+/** Thrown by `authenticate`; `code` is a key of `auth.errors` in the locale files, or 'network' / 'generic'. */
+export class AuthError extends Error {
+  code: string
+  constructor(code: string) {
+    super(code)
+    this.code = code
+  }
+}
+
+/** Signs in or up; returns the username and their saved language. A new account saves `lang`. */
 export async function authenticate(
   mode: 'signin' | 'signup',
   username: string,
   password: string,
+  lang: LangCode | null,
   turnstileToken?: string,
-) {
+): Promise<{ user: string; lang: LangCode | null }> {
   let result
   try {
-    result = await call(mode, 'POST', { username, password, turnstileToken })
+    result = await call(mode, 'POST', { username, password, turnstileToken, lang: lang ?? undefined })
   } catch {
-    throw new Error('Không kết nối được máy chủ. Hãy thử lại.')
+    throw new AuthError('network')
   }
   const { res, data } = result
-  if (res.ok && data?.user) return data.user as string
-  throw new Error(ERRORS[data?.error] ?? 'Có lỗi xảy ra, hãy thử lại.')
+  if (res.ok && data?.user) return { user: data.user as string, lang: isLang(data.lang) ? data.lang : null }
+  throw new AuthError(typeof data?.error === 'string' ? data.error : 'generic')
+}
+
+/** Saves the learner's language on their account (best effort). */
+export async function saveLanguage(lang: LangCode) {
+  try {
+    await call('settings', 'POST', { lang })
+  } catch {
+    // Kept locally anyway; sent again next time it changes.
+  }
 }
 
 export async function signOut() {

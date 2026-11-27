@@ -1,14 +1,17 @@
 import { useEffect, useState } from 'react'
-import { authenticate, fetchSignupCaptcha } from '../auth'
+import { authenticate, AuthError, fetchSignupCaptcha } from '../auth'
+import { useI18n, type LangCode } from '../i18n'
 import { LogoMark } from './icons'
+import { LanguageSelect } from './LanguagePicker'
 import { Turnstile } from './Turnstile'
 
 interface Props {
-  onSignedIn: (user: string) => void
+  onSignedIn: (user: string, lang: LangCode | null) => void
   onGuest: () => void
 }
 
 export function AuthScreen({ onSignedIn, onGuest }: Props) {
+  const { lang, t } = useI18n()
   const [mode, setMode] = useState<'signin' | 'signup'>('signin')
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
@@ -29,18 +32,20 @@ export function AuthScreen({ onSignedIn, onGuest }: Props) {
     e.preventDefault()
     setError('')
     if (mode === 'signup' && password !== confirm) {
-      setError('Mật khẩu nhập lại không khớp.')
+      setError(t.auth.mismatch)
       return
     }
     if (needsCaptcha && !captcha) {
-      setError('Hãy hoàn thành bước xác minh bên dưới.')
+      setError(t.auth.captcha)
       return
     }
     setBusy(true)
     try {
-      onSignedIn(await authenticate(mode, username, password, needsCaptcha ? captcha : undefined))
+      const r = await authenticate(mode, username, password, lang, needsCaptcha ? captcha : undefined)
+      onSignedIn(r.user, r.lang)
     } catch (err) {
-      setError((err as Error).message)
+      const code = err instanceof AuthError ? err.code : 'generic'
+      setError(t.auth.errors[code] ?? (code === 'network' ? t.auth.network : t.auth.generic))
       if (needsCaptcha) {
         // A token works only once, so show a fresh check.
         setCaptcha('')
@@ -62,13 +67,13 @@ export function AuthScreen({ onSignedIn, onGuest }: Props) {
         <LogoMark />
         <div>
           <h1>English Fun</h1>
-          <p>Luyện đọc, viết và xây kho từ vựng của riêng bạn</p>
+          <p>{t.auth.tagline}</p>
         </div>
       </div>
       <form className="card auth-form" onSubmit={submit}>
-        <h2>{mode === 'signin' ? 'Đăng nhập' : 'Tạo tài khoản'}</h2>
+        <h2>{mode === 'signin' ? t.auth.signIn : t.auth.signUp}</h2>
         <label className="field">
-          Tên đăng nhập
+          {t.auth.username}
           <input
             value={username}
             onChange={(e) => setUsername(e.target.value)}
@@ -78,7 +83,7 @@ export function AuthScreen({ onSignedIn, onGuest }: Props) {
           />
         </label>
         <label className="field">
-          Mật khẩu
+          {t.auth.password}
           <input
             type="password"
             value={password}
@@ -89,7 +94,7 @@ export function AuthScreen({ onSignedIn, onGuest }: Props) {
         </label>
         {mode === 'signup' && (
           <label className="field">
-            Nhập lại mật khẩu
+            {t.auth.confirm}
             <input
               type="password"
               value={confirm}
@@ -99,27 +104,39 @@ export function AuthScreen({ onSignedIn, onGuest }: Props) {
             />
           </label>
         )}
-        {needsCaptcha && <Turnstile siteKey={siteKey} onToken={setCaptcha} resetKey={captchaRound} />}
+        {needsCaptcha && (
+          <Turnstile siteKey={siteKey} onToken={setCaptcha} resetKey={captchaRound} language={lang ?? 'auto'} />
+        )}
         {error && <p className="error">{error}</p>}
         <button className="primary lg" type="submit" disabled={busy}>
-          {busy ? 'Đang xử lý...' : mode === 'signin' ? 'Đăng nhập' : 'Tạo tài khoản'}
+          {busy ? t.auth.busy : mode === 'signin' ? t.auth.signIn : t.auth.signUp}
         </button>
         <p className="auth-foot">
-          {mode === 'signin' ? 'Chưa có tài khoản?' : 'Đã có tài khoản?'}{' '}
+          {mode === 'signin' ? t.auth.noAccount : t.auth.haveAccount}{' '}
           <button type="button" className="link" onClick={switchMode}>
-            {mode === 'signin' ? 'Đăng ký' : 'Đăng nhập'}
+            {mode === 'signin' ? t.auth.switchToSignUp : t.auth.switchToSignIn}
           </button>
         </p>
       </form>
-      <div className="divider">hoặc</div>
+      <div className="divider">{t.auth.or}</div>
       <button className="ghost" onClick={onGuest}>
-        Dùng thử không cần tài khoản
+        {t.auth.guest}
       </button>
       <p className="hint" style={{ textAlign: 'center', marginTop: -12 }}>
-        Kho từ khi dùng thử chỉ lưu trên máy này.
+        {t.auth.guestNote}
       </p>
+      <div className="auth-lang">
+        <LanguageSelect />
+      </div>
       <p className="hint" style={{ textAlign: 'center' }}>
-        <a href="/">Giới thiệu English Fun</a> · <a href="/chu-de">Từ vựng theo chủ đề</a> · <a href="/blog">Blog</a>
+        {/* The public pages are in Vietnamese for now. */}
+        <a href="/">{t.auth.about}</a>
+        {lang === 'vi' && (
+          <>
+            {' '}
+            · <a href="/chu-de">Từ vựng theo chủ đề</a> · <a href="/blog">Blog</a>
+          </>
+        )}
       </p>
     </section>
   )

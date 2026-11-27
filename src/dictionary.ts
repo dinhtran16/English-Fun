@@ -1,9 +1,12 @@
+import { languageInfo, type LangCode } from './i18n/languages'
+
 export interface LookupResult {
   phonetic?: string
   definition?: string
   example?: string
   partOfSpeech?: string
-  meaningVi?: string
+  /** Machine translation into the learner's language. */
+  meaning?: string
   audioUrl?: string
 }
 
@@ -38,9 +41,10 @@ async function lookupEnglish(word: string): Promise<Partial<LookupResult>> {
   }
 }
 
-async function translateToVi(word: string): Promise<string | undefined> {
+async function translate(word: string, lang: LangCode): Promise<string | undefined> {
+  const target = languageInfo(lang).translate
   const res = await fetch(
-    `https://api.mymemory.translated.net/get?q=${encodeURIComponent(word)}&langpair=en|vi`,
+    `https://api.mymemory.translated.net/get?q=${encodeURIComponent(word)}&langpair=en|${target}`,
   )
   if (!res.ok) return undefined
   const data = (await res.json()) as { responseData?: { translatedText?: string } }
@@ -49,12 +53,12 @@ async function translateToVi(word: string): Promise<string | undefined> {
   return text
 }
 
-/** Looks up a word in a free English dictionary and a free EN→VI translator. Either may fail; the user can always type the meaning. */
-export async function lookupWord(word: string): Promise<LookupResult> {
-  const [en, vi] = await Promise.allSettled([lookupEnglish(word), translateToVi(word)])
+/** Looks up a word in a free English dictionary and a free translator into the learner's language. Either may fail; the user can always type the meaning. */
+export async function lookupWord(word: string, lang: LangCode): Promise<LookupResult> {
+  const [en, tr] = await Promise.allSettled([lookupEnglish(word), translate(word, lang)])
   return {
     ...(en.status === 'fulfilled' ? en.value : {}),
-    meaningVi: vi.status === 'fulfilled' ? vi.value : undefined,
+    meaning: tr.status === 'fulfilled' ? tr.value : undefined,
   }
 }
 

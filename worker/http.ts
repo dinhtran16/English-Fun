@@ -76,6 +76,10 @@ const SCHEMA = [
     count INTEGER NOT NULL,
     PRIMARY KEY (username, day)
   )`,
+  `CREATE TABLE IF NOT EXISTS user_settings (
+    username TEXT PRIMARY KEY,
+    lang TEXT
+  )`,
   `CREATE TABLE IF NOT EXISTS rate_limits (
     key TEXT PRIMARY KEY,
     window_start INTEGER NOT NULL,

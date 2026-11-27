@@ -1,14 +1,15 @@
 import type { Passage, Topic } from '../types'
 
+/** `name` is the English name (sent to the AI); the interface shows the name from the locale files (topics). */
 export const TOPICS: Topic[] = [
-  { id: 'work', name: 'Công việc', emoji: '💼' },
-  { id: 'travel', name: 'Du lịch', emoji: '✈️' },
-  { id: 'technology', name: 'Công nghệ', emoji: '💻' },
-  { id: 'health', name: 'Sức khỏe', emoji: '🏃' },
-  { id: 'daily', name: 'Đời sống', emoji: '🏠' },
+  { id: 'work', name: 'Work', emoji: '💼' },
+  { id: 'travel', name: 'Travel', emoji: '✈️' },
+  { id: 'technology', name: 'Technology', emoji: '💻' },
+  { id: 'health', name: 'Health', emoji: '🏃' },
+  { id: 'daily', name: 'Daily life', emoji: '🏠' },
 ]
 
-export const PASSAGES: Passage[] = [
+export const PASSAGES: (Passage & { vi: string })[] = [
   {
     id: 'work-1',
     topicId: 'work',

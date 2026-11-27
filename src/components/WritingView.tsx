@@ -1,7 +1,8 @@
 import { Check, Loader2, RefreshCw, Send } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { AiUnavailable, generatePassage, gradeTranslation, type Feedback } from '../ai'
+import { AiUnavailable, fallbackNotice, generatePassage, gradeTranslation, type Feedback } from '../ai'
 import { buildExercise, containsWord, overlapScore, pickTargets, type WritingExercise } from '../exercise'
+import { useI18n, useTranslationOf, type Messages } from '../i18n'
 import { useDraft } from '../persist'
 import type { VocabStore } from '../storage'
 import type { PracticeSettings, Topic, VocabWord } from '../types'
@@ -17,27 +18,27 @@ interface Props {
   settings: PracticeSettings
 }
 
-const errorText = (err: unknown) =>
-  err instanceof AiUnavailable ? err.message : 'AI gặp lỗi, đang dùng bài có sẵn.'
-
 /** Asks the AI for a passage built around the learner's words; falls back to built-in passages. */
 async function makeExercise(
   topic: Topic,
   bank: VocabWord[],
   settings: PracticeSettings,
+  t: Messages,
   excludeId?: string,
 ): Promise<{ exercise: WritingExercise; notice: string }> {
   if (!settings.aiEnabled) return { exercise: buildExercise(topic.id, bank, excludeId), notice: '' }
   const targets = pickTargets(bank, topic.id)
   try {
-    const passage = await generatePassage(topic, 'writing', settings.level, targets)
+    const passage = await generatePassage(topic, 'writing', settings.level, settings.lang, targets)
     return { exercise: { passage, targets }, notice: '' }
   } catch (err) {
-    return { exercise: buildExercise(topic.id, bank, excludeId), notice: errorText(err) }
+    return { exercise: buildExercise(topic.id, bank, excludeId), notice: fallbackNotice(t, err) }
   }
 }
 
 export function WritingView({ topic, vocab, settings }: Props) {
+  const { t } = useI18n()
+  const translationOf = useTranslationOf()
   const [exercise, setExercise] = useDraft<WritingExercise | null>('writing:exercise', null)
   const [notice, setNotice] = useState('')
   const [translation, setTranslation] = useDraft('writing:translation', '')
@@ -63,8 +64,8 @@ export function WritingView({ topic, vocab, settings }: Props) {
   useEffect(() => {
     if (started.current) return
     started.current = true
-    makeExercise(topic, initialBank, settings).then(show)
-  }, [topic, initialBank, settings, show])
+    makeExercise(topic, initialBank, settings, t).then(show)
+  }, [topic, initialBank, settings, t, show])
 
   const next = async () => {
     const excludeId = exercise?.passage.id
@@ -74,20 +75,16 @@ export function WritingView({ topic, vocab, settings }: Props) {
     setChecked(false)
     setFeedback(null)
     setGradeError('')
-    show(await makeExercise(topic, vocab.words, settings, excludeId))
+    show(await makeExercise(topic, vocab.words, settings, t, excludeId))
   }
 
+  const topicName = t.topics[topic.id] ?? topic.name
   if (!exercise) {
-    return (
-      <LoadingPassage
-        text={`Đang soạn bài viết về ${topic.name.toLowerCase()}${
-          vocab.words.length > 0 ? ', lồng các từ trong kho của bạn' : ''
-        }`}
-      />
-    )
+    return <LoadingPassage text={t.writing.loading(topicName, vocab.words.length > 0)} />
   }
 
   const { passage, targets } = exercise
+  const source = translationOf(passage)
   const allText = `${translation}\n${ownSentences}`
   const usedWords = targets.filter((t) => containsWord(allText, t.word)).map((t) => t.word)
 
@@ -99,9 +96,9 @@ export function WritingView({ topic, vocab, settings }: Props) {
     setGradeError('')
     try {
       const answer = ownSentences.trim() ? `${translation}\n\n${ownSentences}` : translation
-      setFeedback(await gradeTranslation(passage, answer, targets))
+      setFeedback(await gradeTranslation(passage, source, answer, targets, settings.lang))
     } catch (err) {
-      setGradeError(err instanceof AiUnavailable ? err.message.replace(', đang dùng bài có sẵn', '') : 'AI chưa chấm được bài, hãy thử lại.')
+      setGradeError((err instanceof AiUnavailable && t.aiErrors[err.code]) || t.writing.gradeFailed)
     } finally {
       setGrading(false)
     }
@@ -113,13 +110,13 @@ export function WritingView({ topic, vocab, settings }: Props) {
         <div className="practice-head">
           <div>
             <div className="meta">
-              <TopicIcon id={topic.id} size={15} /> {topic.name} · Viết và dịch
+              <TopicIcon id={topic.id} size={15} /> {topicName} · {t.writing.name}
               <SourceTag passage={passage} />
             </div>
             <h1>{passage.title}</h1>
           </div>
           <button onClick={next}>
-            <RefreshCw size={16} /> Bài khác
+            <RefreshCw size={16} /> {t.writing.another}
           </button>
         </div>
         {notice && <div className="callout warn">{notice}</div>}
@@ -127,17 +124,15 @@ export function WritingView({ topic, vocab, settings }: Props) {
         <div className="card targets">
           <div className="row space">
             <span className="eyebrow" style={{ margin: 0 }}>
-              Từ cần dùng
+              {t.writing.targets}
             </span>
             {targets.length > 0 && (
-              <span className="small muted">
-                Đã dùng {usedWords.length}/{targets.length}
-              </span>
+              <span className="small muted">{t.writing.usedCount(usedWords.length, targets.length)}</span>
             )}
           </div>
           {targets.length === 0 ? (
             <p className="small muted" style={{ marginTop: 6 }}>
-              Kho từ đang trống. Luyện Đọc để lưu từ mới, các bài viết sau sẽ lồng chúng vào.
+              {t.writing.emptyBank}
             </p>
           ) : (
             <ul className="chips">
@@ -157,9 +152,9 @@ export function WritingView({ topic, vocab, settings }: Props) {
 
         <div className="step-title">
           <span className="step-num">1</span>
-          <h3>Dịch đoạn văn sang tiếng Anh</h3>
+          <h3>{t.writing.step1}</h3>
         </div>
-        <div className="card source-vi">{passage.vi}</div>
+        <div className="card source-vi">{source}</div>
         <textarea
           style={{ marginTop: 12 }}
           value={translation}
@@ -174,7 +169,7 @@ export function WritingView({ topic, vocab, settings }: Props) {
             <div className="step-title">
               <span className="step-num">2</span>
               <h3>
-                Viết thêm 2-3 câu dùng các từ còn thiếu <span className="small muted">(không bắt buộc)</span>
+                {t.writing.step2} <span className="small muted">{t.writing.optional}</span>
               </h3>
             </div>
             <textarea
@@ -190,7 +185,7 @@ export function WritingView({ topic, vocab, settings }: Props) {
         <div className="toolbar">
           <button className="primary lg" onClick={check} disabled={!translation.trim() || grading}>
             {grading ? <Loader2 size={18} className="spin" /> : <Send size={17} />}
-            {grading ? 'Đang chấm...' : settings.aiEnabled ? 'Nộp bài và chấm' : 'Kiểm tra'}
+            {grading ? t.writing.grading : settings.aiEnabled ? t.writing.submitAi : t.writing.submit}
           </button>
         </div>
 
@@ -203,36 +198,36 @@ export function WritingView({ topic, vocab, settings }: Props) {
               !grading && (
                 <div className="card card-pad stack">
                   <p>
-                    Độ trùng khớp với bản gốc: <b>{overlapScore(translation, passage.en)}%</b>{' '}
-                    <span className="small muted">
-                      (chỉ để tham khảo, cách diễn đạt khác vẫn có thể đúng)
-                    </span>
+                    {t.writing.overlap}: <b>{overlapScore(translation, passage.en)}%</b>{' '}
+                    <span className="small muted">{t.writing.overlapNote}</span>
                   </p>
                   {targets.length > 0 && (
                     <p>
                       {usedWords.length === targets.length
-                        ? 'Bạn đã dùng đủ tất cả từ cần luyện.'
-                        : `Còn thiếu: ${targets
-                            .filter((t) => !usedWords.includes(t.word))
-                            .map((t) => t.word)
-                            .join(', ')}`}
+                        ? t.writing.allUsed
+                        : t.writing.missing(
+                            targets
+                              .filter((w) => !usedWords.includes(w.word))
+                              .map((w) => w.word)
+                              .join(', '),
+                          )}
                     </p>
                   )}
                 </div>
               )
             )}
             <div>
-              <div className="eyebrow">Bản gốc tiếng Anh</div>
+              <div className="eyebrow">{t.writing.original}</div>
               <div className="card">
                 <PassageText
                   text={passage.en}
                   isKnown={vocab.has}
-                  isTarget={(w) => targets.some((t) => t.word === w)}
+                  isTarget={(w) => targets.some((x) => x.word === w)}
                   onPick={addPending}
                 />
               </div>
               <p className="hint" style={{ marginTop: 8 }}>
-                Bấm hoặc kéo từ mới sang bảng bên phải để lưu vào kho.
+                {t.writing.saveHint}
               </p>
             </div>
           </div>
@@ -251,6 +246,7 @@ export function WritingView({ topic, vocab, settings }: Props) {
 }
 
 function FeedbackView({ feedback }: { feedback: Feedback }) {
+  const { t } = useI18n()
   const tone = feedback.score >= 8 ? 's3' : feedback.score < 5 ? 's0' : ''
   return (
     <div className="card feedback">
@@ -265,7 +261,7 @@ function FeedbackView({ feedback }: { feedback: Feedback }) {
       </div>
       {feedback.corrections.length > 0 && (
         <div>
-          <div className="eyebrow">Cần sửa</div>
+          <div className="eyebrow">{t.writing.fixes}</div>
           <ul className="corrections">
             {feedback.corrections.map((c, i) => (
               <li key={i}>
@@ -278,11 +274,11 @@ function FeedbackView({ feedback }: { feedback: Feedback }) {
       )}
       {feedback.wordNotes.length > 0 && (
         <div>
-          <div className="eyebrow">Từ cần luyện</div>
+          <div className="eyebrow">{t.writing.wordNotes}</div>
           <ul className="corrections">
             {feedback.wordNotes.map((n) => (
               <li key={n.word}>
-                <b>{n.word}</b> <span className={n.used ? 'right small' : 'muted small'}>{n.used ? 'đã dùng' : 'chưa dùng'}</span>
+                <b>{n.word}</b> <span className={n.used ? 'right small' : 'muted small'}>{n.used ? t.writing.used : t.writing.notUsed}</span>
                 <div className="small muted">{n.note}</div>
               </li>
             ))}
@@ -291,7 +287,7 @@ function FeedbackView({ feedback }: { feedback: Feedback }) {
       )}
       {feedback.improved && (
         <div className="reference">
-          <div className="eyebrow">Bài của bạn sau khi sửa</div>
+          <div className="eyebrow">{t.writing.improved}</div>
           <p style={{ fontFamily: 'var(--serif)', fontSize: '1.05rem' }}>{feedback.improved}</p>
         </div>
       )}
