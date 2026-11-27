@@ -1,5 +1,6 @@
 import { COOKIE, readCookie } from './auth'
 import type { Env } from './http'
+import { LANGUAGES } from '../src/i18n/languages'
 
 /** Same policy as public/_headers, applied here because these responses pass through the Worker. */
 const PAGE_HEADERS: Record<string, string> = {
@@ -13,6 +14,9 @@ const PAGE_HEADERS: Record<string, string> = {
 }
 
 const PLACEHOLDER = '__SITE_URL__'
+
+/** Home pages: "/" (Vietnamese) and "/en/", "/ja/"... (see site/content/home.ts). */
+const HOME_PATH = new RegExp(`^/(?:(?:en|${LANGUAGES.map((l) => l.code).join('|')})/?)?$`)
 
 /** The site's public address: SITE_URL when set (e.g. https://hoctienganh.app), otherwise the address in use. */
 function siteOrigin(env: Env, url: URL): string {
@@ -28,7 +32,8 @@ export async function serveSite(request: Request, env: Env): Promise<Response> {
   const url = new URL(request.url)
 
   // Signed-in visitors go straight to the app; everyone else (and search engines) sees the home page.
-  if (url.pathname === '/' && readCookie(request, COOKIE)) {
+  const isHome = HOME_PATH.test(url.pathname)
+  if (isHome && readCookie(request, COOKIE)) {
     return new Response(null, { status: 302, headers: { location: '/app/', 'cache-control': 'no-store' } })
   }
 
@@ -43,6 +48,6 @@ export async function serveSite(request: Request, env: Env): Promise<Response> {
   for (const [k, v] of Object.entries(PAGE_HEADERS)) if (!headers.has(k)) headers.set(k, v)
   // Keep search engines on the main address only (e.g. not the *.workers.dev copy).
   if (new URL(origin).host !== url.host) headers.set('x-robots-tag', 'noindex')
-  if (url.pathname === '/') headers.set('vary', 'cookie')
+  if (isHome) headers.set('vary', 'cookie')
   return new Response(body, { status: res.status, statusText: res.statusText, headers })
 }

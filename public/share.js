@@ -8,11 +8,11 @@
     return navigator.share({ title: document.title, text: box.dataset.text, url: box.dataset.url }).catch(function () {})
   }
 
-  function copy(btn, url) {
+  function copy(btn, url, copied) {
     var label = btn.querySelector('[data-label]')
     var done = function () {
       var old = label.textContent
-      label.textContent = 'Đã sao chép'
+      label.textContent = copied
       btn.classList.add('done')
       setTimeout(function () {
         label.textContent = old
@@ -21,10 +21,10 @@
     }
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(url).then(done, function () {
-        window.prompt('Sao chép link', url)
+        window.prompt(label.textContent, url)
       })
     } else {
-      window.prompt('Sao chép link', url)
+      window.prompt(label.textContent, url)
     }
   }
 
@@ -33,7 +33,7 @@
     var n = box.querySelector('[data-share-native]')
     c.hidden = false
     c.addEventListener('click', function () {
-      copy(c, box.dataset.url)
+      copy(c, box.dataset.url, box.dataset.copied || '✓')
     })
     if (canNative) {
       n.hidden = false

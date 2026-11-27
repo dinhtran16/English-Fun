@@ -23,7 +23,7 @@ function sitePages(): Plugin {
         // Reload site/ on every request so edits show up without restarting.
         const mod = (await server.ssrLoadModule('/site/build.ts')) as typeof import('./site/build.ts')
         const files = mod.buildSite()
-        const name = path === '/' ? 'index.html' : path.slice(1)
+        const name = path.endsWith('/') ? `${path.slice(1)}index.html` : path.slice(1)
         const file = files[name] !== undefined ? name : files[`${name}.html`] !== undefined ? `${name}.html` : null
         if (!file) return next()
         const type = file.endsWith('.xml') ? 'application/xml' : file.endsWith('.txt') ? 'text/plain' : 'text/html'

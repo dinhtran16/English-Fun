@@ -4,7 +4,20 @@
  * Used by the `site-pages` plugin in vite.config.ts, both for `vite build` and the dev server.
  */
 import { BookOpen, Library, PenLine, Sparkles } from 'lucide-react'
-import { PASSAGES } from '../src/data/passages.ts'
+import { PASSAGES, TOPICS } from '../src/data/passages.ts'
+import type { Messages } from '../src/i18n/locales/en.ts'
+import de from '../src/i18n/locales/de.ts'
+import en from '../src/i18n/locales/en.ts'
+import es from '../src/i18n/locales/es.ts'
+import fr from '../src/i18n/locales/fr.ts'
+import hi from '../src/i18n/locales/hi.ts'
+import id from '../src/i18n/locales/id.ts'
+import ja from '../src/i18n/locales/ja.ts'
+import ko from '../src/i18n/locales/ko.ts'
+import pt from '../src/i18n/locales/pt.ts'
+import vi from '../src/i18n/locales/vi.ts'
+import zh from '../src/i18n/locales/zh.ts'
+import { HOMES, homePath, tryUrl, type HomeCopy } from './content/home.ts'
 import { toneClass, topicIconFor } from '../src/topicIcons.ts'
 import { POSTS, type Post } from './content/posts.ts'
 import { TOPIC_PAGES, type TopicContent } from './content/topics.ts'
@@ -23,111 +36,88 @@ const formatDate = (iso: string) => {
   return `${Number(d)}/${Number(m)}/${y}`
 }
 
-const FAQ: [string, string][] = [
-  [
-    'English Fun có miễn phí không?',
-    'Có. Bạn có thể dùng thử ngay không cần tài khoản với các bài đọc và bài viết có sẵn. Tạo tài khoản để đồng bộ kho từ giữa các thiết bị và dùng AI tạo bài mới, chấm bài viết.',
-  ],
-  [
-    'App phù hợp với trình độ nào?',
-    'Từ sơ cấp (A2) đến nâng cao (C1). Bạn chọn trình độ trước mỗi bài, và có thể đổi bất cứ lúc nào.',
-  ],
-  [
-    'Kho từ hoạt động thế nào?',
-    'Khi đọc, bạn bấm hoặc kéo một từ sang bảng bên cạnh để xem nghĩa, phiên âm và lưu vào kho. Kho từ có chế độ ôn bằng thẻ và gõ lại từ, ưu tiên những từ bạn chưa nhớ.',
-  ],
-  [
-    'Có cần cài đặt gì không?',
-    'Không. English Fun chạy ngay trên trình duyệt, cả trên máy tính và điện thoại.',
-  ],
-  [
-    'Luyện viết trong app là gì?',
-    'App đưa cho bạn một đoạn tiếng Việt có chứa các từ trong kho từ của bạn. Bạn dịch sang tiếng Anh, so với bản gốc, và khi đăng nhập thì AI chấm điểm và gợi ý cách sửa.',
-  ],
-]
+const LOCALES: Record<string, Messages> = { vi, en, es, pt, fr, de, id, ja, ko, zh, hi }
 
-function home(): string {
-  const features = [
-    {
-      ic: BookOpen,
-      title: 'Đọc hiểu theo chủ đề',
-      text: 'Đoạn văn ngắn theo chủ đề và trình độ của bạn. Viết bản dịch của mình, rồi so với bản dịch mẫu. Có nút nghe để luyện phát âm.',
-    },
-    {
-      ic: PenLine,
-      title: 'Viết và dịch',
-      text: 'Dịch một đoạn tiếng Việt sang tiếng Anh, có chèn sẵn từ trong kho của bạn. AI chấm điểm, chỉ lỗi và gợi ý cách viết tự nhiên hơn.',
-    },
-    {
-      ic: Library,
-      title: 'Kho từ của riêng bạn',
-      text: 'Bấm vào một từ để xem nghĩa, phiên âm và lưu kèm câu gốc. Ôn bằng thẻ hoặc gõ lại, từ chưa nhớ được ưu tiên ôn trước.',
-    },
-  ]
-  const steps = [
-    ['Chọn chủ đề và trình độ', 'Công việc, du lịch, công nghệ, sức khỏe hay đời sống, từ A2 đến C1.'],
-    ['Đọc hoặc viết', 'Mỗi bài chỉ vài phút. Gặp từ lạ thì bấm vào để tra nghĩa ngay.'],
-    ['Lưu và ôn từ mới', 'Từ mới vào kho từ, rồi quay lại trong bài viết và bài ôn của những ngày sau.'],
-  ]
+/** The home page in one language. Vietnamese links to the topic pages and blog; the others link into the app. */
+function home(h: HomeCopy): string {
+  const isVi = h.code === 'vi'
+  const tryHref = tryUrl(h)
+  const path = homePath(h)
+  const features = [BookOpen, PenLine, Library].map((ic, i) => ({ ic, title: h.features[i][0], text: h.features[i][1] }))
   const schema = [
     {
       '@context': 'https://schema.org',
       '@type': 'WebSite',
       name: SITE_NAME,
-      url: `${SITE}/`,
-      inLanguage: 'vi',
+      url: `${SITE}${path}`,
+      inLanguage: h.hreflang,
     },
     {
       '@context': 'https://schema.org',
       '@type': 'WebApplication',
       name: SITE_NAME,
-      url: `${SITE}/`,
+      url: `${SITE}${path}`,
       image: OG_IMAGE,
-      description: 'Ứng dụng luyện đọc, viết tiếng Anh theo chủ đề và xây kho từ vựng cá nhân cho người Việt.',
+      description: h.appDescription,
       applicationCategory: 'EducationalApplication',
       operatingSystem: 'Web',
-      inLanguage: 'vi',
+      inLanguage: h.hreflang,
       isAccessibleForFree: true,
-      offers: { '@type': 'Offer', price: '0', priceCurrency: 'VND' },
+      offers: { '@type': 'Offer', price: '0', priceCurrency: isVi ? 'VND' : 'USD' },
     },
     {
       '@context': 'https://schema.org',
       '@type': 'FAQPage',
-      mainEntity: FAQ.map(([q, a]) => ({
+      mainEntity: h.faq.map(([q, a]) => ({
         '@type': 'Question',
         name: q,
         acceptedAnswer: { '@type': 'Answer', text: a },
       })),
     },
   ]
+  const names = LOCALES[h.code].topics
+  const topicCards = isVi
+    ? TOPIC_PAGES.map(
+        (t) => `<a class="card topic-card ${toneClass(t.id)}" href="${topicPath(t)}">
+            <span class="topic-icon">${topicIcon(t.id)}</span>
+            <span class="topic-name">${t.name}</span>
+            <span class="muted small">${t.words.length} từ mẫu</span>
+          </a>`,
+      )
+    : TOPICS.map(
+        (t) => `<a class="card topic-card ${toneClass(t.id)}" href="${tryHref}&amp;topic=${t.id}&amp;skill=reading">
+            <span class="topic-icon">${topicIcon(t.id)}</span>
+            <span class="topic-name">${esc(names[t.id] ?? t.name)}</span>
+          </a>`,
+      )
   const body = `
       <section class="hero">
         <div class="wrap hero-inner">
           <div class="hero-copy">
-            <span class="pill">${icon(Sparkles, 14)} Dùng thử ngay, không cần đăng ký</span>
-            <h1>Luyện đọc, viết tiếng Anh và xây kho từ vựng của riêng bạn</h1>
-            <p class="lead">English Fun giúp người lớn học tiếng Anh mỗi ngày 15 phút: đọc đoạn văn theo chủ đề, dịch sang tiếng Anh và lưu từ mới vào kho để ôn lại.</p>
+            <span class="pill">${icon(Sparkles, 14)} ${esc(h.pill)}</span>
+            <h1>${esc(h.h1)}</h1>
+            <p class="lead">${esc(h.lead)}</p>
             <div class="row">
-              <a class="btn primary lg" href="${TRY_URL}">Dùng thử miễn phí</a>
-              <a class="btn lg" href="/app/">Đăng nhập</a>
+              <a class="btn primary lg" href="${tryHref}">${esc(h.tryFree)}</a>
+              <a class="btn lg" href="/app/">${esc(h.chrome.signIn)}</a>
             </div>
-            <p class="muted small">Chạy trên trình duyệt, máy tính và điện thoại.</p>
+            <p class="muted small">${esc(h.runs)}</p>
           </div>
           <figure class="shot hero-shot">
-            <img src="/img/doc-hieu.jpg" width="1280" height="800" alt="Màn hình luyện đọc của English Fun: đoạn văn tiếng Anh bên trái, bảng tra và lưu từ mới bên phải" fetchpriority="high" />
+            <img src="/img/doc-hieu.jpg" width="1280" height="800" alt="${esc(h.heroAlt)}" fetchpriority="high" />
           </figure>
         </div>
       </section>
 
       <section class="wrap section">
-        <h2 class="section-title">Mọi thứ bạn cần để tự học mỗi ngày</h2>
+        <h2 class="section-title">${esc(h.featuresTitle)}</h2>
         <div class="grid-3">
           ${features
             .map(
               (f) => `<article class="card feature">
             <span class="feature-icon">${icon(f.ic, 22)}</span>
-            <h3>${f.title}</h3>
-            <p>${f.text}</p>
+            <h3>${esc(f.title)}</h3>
+            <p>${esc(f.text)}</p>
           </article>`,
             )
             .join('\n          ')}
@@ -135,57 +125,46 @@ function home(): string {
       </section>
 
       <section class="wrap section split-media">
-        <figure class="shot"><img src="/img/viet-dich.jpg" width="1280" height="800" loading="lazy" alt="Màn hình luyện viết: đoạn tiếng Việt cần dịch, ô viết bài và danh sách từ cần dùng" /></figure>
+        <figure class="shot"><img src="/img/viet-dich.jpg" width="1280" height="800" loading="lazy" alt="${esc(h.writeAlt)}" /></figure>
         <div>
-          <h2 class="section-title left">Học thế nào?</h2>
+          <h2 class="section-title left">${esc(h.stepsTitle)}</h2>
           <ol class="steps">
-            ${steps.map(([t, d]) => `<li><strong>${t}</strong><span>${d}</span></li>`).join('\n            ')}
+            ${h.steps.map(([t, d]) => `<li><strong>${esc(t)}</strong><span>${esc(d)}</span></li>`).join('\n            ')}
           </ol>
-          <a class="btn primary" href="${TRY_URL}">Thử một bài đọc</a>
+          <a class="btn primary" href="${tryHref}">${esc(h.tryReading)}</a>
         </div>
       </section>
 
-      <section class="wrap section">
-        <h2 class="section-title">Từ vựng tiếng Anh theo chủ đề</h2>
-        <p class="section-lead">Mỗi chủ đề có danh sách từ mẫu kèm phiên âm, câu ví dụ và một đoạn đọc có bản dịch.</p>
+      <section class="wrap section" id="topics">
+        <h2 class="section-title">${esc(h.topicsTitle)}</h2>
+        <p class="section-lead">${esc(h.topicsLead)}</p>
         <div class="topic-grid">
-          ${TOPIC_PAGES.map(
-            (t) => `<a class="card topic-card ${toneClass(t.id)}" href="${topicPath(t)}">
-            <span class="topic-icon">${topicIcon(t.id)}</span>
-            <span class="topic-name">${t.name}</span>
-            <span class="muted small">${t.words.length} từ mẫu</span>
-          </a>`,
-          ).join('\n          ')}
+          ${topicCards.join('\n          ')}
         </div>
       </section>
-
+${
+  isVi
+    ? `
       <section class="wrap section">
         <h2 class="section-title">Bài viết mới</h2>
         <div class="grid-2">
           ${POSTS.slice(0, 4).map(postCard).join('\n          ')}
         </div>
       </section>
-
-      <section class="wrap section narrow">
-        <h2 class="section-title">Câu hỏi thường gặp</h2>
+`
+    : ''
+}
+      <section class="wrap section narrow" id="faq">
+        <h2 class="section-title">${esc(h.faqTitle)}</h2>
         <div class="faq">
-          ${FAQ.map(([q, a]) => `<details><summary>${q}</summary><p>${a}</p></details>`).join('\n          ')}
+          ${h.faq.map(([q, a]) => `<details><summary>${esc(q)}</summary><p>${esc(a)}</p></details>`).join('\n          ')}
         </div>
       </section>
 
       <div class="wrap section">
-        ${cta('Bắt đầu bài đọc đầu tiên', 'Không cần tài khoản. Chọn chủ đề, đọc và lưu từ mới chỉ trong vài phút.')}
+        ${cta(esc(h.ctaTitle), esc(h.ctaText), tryHref, esc(h.tryFree))}
       </div>`
-  return page(
-    {
-      path: '/',
-      title: 'English Fun: Luyện đọc, viết tiếng Anh và học từ vựng theo chủ đề',
-      description:
-        'Học tiếng Anh cho người lớn: luyện đọc hiểu, luyện viết bằng cách dịch Việt sang Anh, tra nghĩa và lưu từ mới vào kho từ để ôn lại. Dùng thử miễn phí, không cần đăng ký.',
-      schema,
-    },
-    body,
-  )
+  return page({ path, title: h.title, description: h.description, schema, home: h, translated: true }, body)
 }
 
 function postCard(p: Post) {
@@ -449,21 +428,25 @@ function notFound(): string {
 }
 
 function sitemap(today: string): string {
-  const urls = [
-    { path: '/', priority: '1.0' },
+  const alternates = [
+    ...HOMES.map((h) => `    <xhtml:link rel="alternate" hreflang="${h.hreflang}" href="${SITE}${homePath(h)}" />`),
+    `    <xhtml:link rel="alternate" hreflang="x-default" href="${SITE}/en/" />`,
+  ].join('\n')
+  const urls: { path: string; priority: string; lastmod?: string; alt?: boolean }[] = [
+    ...HOMES.map((h) => ({ path: homePath(h), priority: '1.0', alt: true })),
     { path: '/chu-de', priority: '0.8' },
     ...TOPIC_PAGES.map((t) => ({ path: topicPath(t), priority: '0.8' })),
     { path: '/blog', priority: '0.6' },
     ...POSTS.map((p) => ({ path: postPath(p), priority: '0.6', lastmod: p.date })),
   ]
   return `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
 ${urls
   .map(
     (u) => `  <url>
     <loc>${SITE}${u.path}</loc>
-    <lastmod>${'lastmod' in u ? u.lastmod : today}</lastmod>
-    <priority>${u.priority}</priority>
+    <lastmod>${u.lastmod ?? today}</lastmod>
+    <priority>${u.priority}</priority>${u.alt ? `\n${alternates}` : ''}
   </url>`,
   )
   .join('\n')}
@@ -484,13 +467,15 @@ Sitemap: ${SITE}/sitemap.xml
  */
 export function buildSite(today = new Date().toISOString().slice(0, 10)): Record<string, string> {
   const files: Record<string, string> = {
-    'index.html': home(),
+    'index.html': home(HOMES[0]),
     'chu-de.html': topicsIndex(),
     'blog.html': blogIndex(),
     '404.html': notFound(),
     'robots.txt': ROBOTS,
     'sitemap.xml': sitemap(today),
   }
+  // Other languages are folders (/en/ → en/index.html), so their address ends with "/".
+  for (const h of HOMES.slice(1)) files[`${h.code}/index.html`] = home(h)
   for (const t of TOPIC_PAGES) files[`chu-de/${t.slug}.html`] = topicPage(t)
   for (const p of POSTS) files[`blog/${p.slug}.html`] = postPage(p)
   return files
