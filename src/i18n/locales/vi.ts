@@ -14,6 +14,13 @@ const vi: Messages = {
     technology: 'Công nghệ',
     health: 'Sức khỏe',
     daily: 'Đời sống',
+    education: 'Giáo dục',
+    food: 'Ẩm thực',
+    shopping: 'Mua sắm',
+    family: 'Gia đình và bạn bè',
+    sports: 'Thể thao',
+    entertainment: 'Phim và âm nhạc',
+    environment: 'Môi trường',
   },
   levels: { A2: 'Sơ cấp', B1: 'Trung cấp', B2: 'Trung cao', C1: 'Nâng cao' },
   nav: {

@@ -8,6 +8,7 @@ import { ReadingView } from './components/ReadingView'
 import { VocabView } from './components/VocabView'
 import { WritingView } from './components/WritingView'
 import { TOPICS } from './data/passages'
+import { toneClass } from './topicIcons'
 import { useI18n, type LangCode } from './i18n'
 import { clearDrafts, useDraft } from './persist'
 import { useVocab, type SyncStatus } from './storage'
@@ -239,7 +240,7 @@ export default function App() {
                 {TOPICS.map((tp) => (
                   <button
                     key={tp.id}
-                    className={`topic-card ${topic?.id === tp.id ? 'selected' : ''}`}
+                    className={`topic-card ${toneClass(tp.id)} ${topic?.id === tp.id ? 'selected' : ''}`}
                     onClick={() => setTopic(tp)}
                     aria-pressed={topic?.id === tp.id}
                   >

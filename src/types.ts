@@ -6,6 +6,8 @@ export interface Topic {
   id: string
   name: string
   emoji: string
+  /** Accent color of the topic's icon (a `tone-*` class in index.css and site.css). */
+  tone: string
 }
 
 export interface Passage {
