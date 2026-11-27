@@ -30,6 +30,17 @@ const vi: Messages = {
     signIn: 'Đăng nhập',
     signOut: 'Đăng xuất',
   },
+  share: {
+    button: 'Chia sẻ',
+    title: 'Chia sẻ English Fun',
+    hint: 'Gửi link cho bạn bè cũng đang học tiếng Anh.',
+    text: 'Mình đang luyện đọc và viết tiếng Anh với English Fun. Dùng thử miễn phí:',
+    link: 'Link',
+    copy: 'Sao chép link',
+    copied: 'Đã sao chép',
+    email: 'Email',
+    more: 'Khác',
+  },
   sync: {
     loading: 'Đang kết nối...',
     synced: 'Đã đồng bộ',

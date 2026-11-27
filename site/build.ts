@@ -8,7 +8,7 @@ import { PASSAGES } from '../src/data/passages.ts'
 import { toneClass, topicIconFor } from '../src/topicIcons.ts'
 import { POSTS, type Post } from './content/posts.ts'
 import { TOPIC_PAGES, type TopicContent } from './content/topics.ts'
-import { breadcrumbs, cta, esc, icon, OG_IMAGE, page, SITE, SITE_NAME, TRY_URL } from './layout.ts'
+import { breadcrumbs, cta, esc, shareBox, icon, OG_IMAGE, page, SITE, SITE_NAME, TRY_URL } from './layout.ts'
 
 const topicIcon = (id: string, size = 20) => icon(topicIconFor(id), size)
 const topicPath = (t: TopicContent) => `/chu-de/${t.slug}`
@@ -337,6 +337,10 @@ function topicPage(t: TopicContent): string {
         <p>Muốn hiểu sâu hơn về cách học? Đọc thêm <a href="/blog/${POSTS[0].slug}">${esc(POSTS[0].title)}</a>.</p>
       </section>
 
+      <div class="wrap section">
+        ${shareBox(topicPath(t), 'Chia sẻ bộ từ vựng này', t.title)}
+      </div>
+
       <section class="wrap section">
         <h2 class="section-title left">Chủ đề khác</h2>
         <div class="topic-grid">
@@ -414,6 +418,7 @@ function postPage(p: Post): string {
         <h1>${esc(p.title)}</h1>
         <p class="muted small">${formatDate(p.date)} · ${p.readMinutes} phút đọc</p>
         <div class="prose">${p.body}</div>
+        ${shareBox(postPath(p), 'Thấy bài viết hữu ích? Chia sẻ cho bạn bè', p.title)}
       </article>
       <div class="wrap section narrow">
         ${cta('Áp dụng ngay với một bài đọc', 'Chọn chủ đề, đọc đoạn văn ngắn và lưu từ mới vào kho. Không cần tài khoản.')}

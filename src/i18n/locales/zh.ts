@@ -40,6 +40,17 @@ const zh: Messages = {
     pickTopic: '选择一个话题开始吧。',
     signInForAi: '登录后，AI 会按你的水平生成新文章并批改你的写作。未登录时，应用使用内置文章。',
   },
+  share: {
+    button: '分享',
+    title: '分享 English Fun',
+    hint: '把链接发给同样在学英语的朋友。',
+    text: '我在用 English Fun 练习英语阅读和写作，可以免费试用：',
+    link: '链接',
+    copy: '复制链接',
+    copied: '已复制',
+    email: '邮件',
+    more: '更多',
+  },
   practice: { aiBadge: 'AI', builtinBadge: '内置', aiFailed: 'AI 出了点问题。', usingBuiltin: '改用内置文章。' },
   reading: {
     name: '阅读',

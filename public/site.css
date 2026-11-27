@@ -235,3 +235,33 @@ mark { background: var(--mark); color: inherit; border-radius: 3px; padding: 0 2
   .tone-green { --tone: #4ade80; }
   .tone-slate { --tone: #94a0b4; }
 }
+
+/* Share (markup from site/layout.ts, behavior in /share.js) */
+.share { position: relative; }
+.share-trigger { gap: 6px; }
+.share-trigger svg { flex: none; }
+.share-pop { position: absolute; right: 0; top: calc(100% + 8px); z-index: 30; width: 340px; padding: 16px; display: grid; gap: 10px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-lg); }
+.share-pop[hidden] { display: none; }
+.share-pop .muted.small { margin-top: -6px; }
+.share-box { margin-top: 36px; padding: 20px; border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface); display: grid; gap: 12px; }
+.share-box-title { font-weight: 700; color: var(--text); }
+.share-targets { display: flex; flex-wrap: wrap; gap: 8px; }
+.share-pop .share-targets { display: grid; grid-template-columns: 1fr 1fr; }
+.share-target { display: inline-flex; align-items: center; gap: 8px; min-height: 38px; padding: 0 12px 0 8px; border: 1px solid var(--border); border-radius: 999px; background: var(--surface); color: var(--text); text-decoration: none; font: inherit; font-size: 0.9rem; font-weight: 500; cursor: pointer; white-space: nowrap; text-align: left; }
+.share-target[hidden] { display: none; }
+.share-target:hover { background: var(--surface-2); border-color: var(--border-strong); }
+.share-target.done { border-color: var(--accent); color: var(--accent-text); }
+.share-badge { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; color: #fff; background: var(--muted); flex: none; }
+.share-target.copy .share-badge { background: var(--accent); }
+.share-glyph { font-weight: 800; font-size: 0.82rem; line-height: 1; font-family: Arial, sans-serif; }
+.share-target.facebook .share-badge { background: #1877f2; }
+.share-target.x .share-badge { background: #0f1419; }
+.share-target.whatsapp .share-badge { background: #25d366; }
+.share-target.telegram .share-badge { background: #229ed9; }
+@media (prefers-color-scheme: dark) {
+  .share-target.x .share-badge { background: #2f3336; }
+  .share-target.copy .share-badge { color: #0c0e12; }
+}
+@media (max-width: 720px) {
+  .share-pop { position: fixed; left: 16px; right: 16px; top: calc(100% + 6px); width: auto; }
+}

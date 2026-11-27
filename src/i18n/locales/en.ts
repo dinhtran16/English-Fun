@@ -33,6 +33,17 @@ const en = {
     signIn: 'Sign in',
     signOut: 'Sign out',
   },
+  share: {
+    button: 'Share',
+    title: 'Share English Fun',
+    hint: 'Send the link to friends who are learning English too.',
+    text: 'I practise English reading and writing with English Fun. Free to try:',
+    link: 'Link',
+    copy: 'Copy link',
+    copied: 'Copied',
+    email: 'Email',
+    more: 'More',
+  },
   sync: {
     loading: 'Connecting...',
     synced: 'Synced',

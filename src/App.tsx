@@ -5,6 +5,7 @@ import { AuthScreen } from './components/AuthScreen'
 import { LanguagePicker, LanguageSelect } from './components/LanguagePicker'
 import { LogoMark, TopicIcon } from './components/icons'
 import { ReadingView } from './components/ReadingView'
+import { ShareButton } from './components/ShareButton'
 import { VocabView } from './components/VocabView'
 import { WritingView } from './components/WritingView'
 import { TOPICS } from './data/passages'
@@ -198,6 +199,7 @@ export default function App() {
           </nav>
           <div className="topbar-right">
             <LanguageSelect onChange={changeLanguage} />
+            <ShareButton />
             <SyncBadge status={vocab.status} user={user} />
             {user && (
               <div className="user-menu">

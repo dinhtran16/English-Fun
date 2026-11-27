@@ -41,6 +41,17 @@ const pt: Messages = {
     signInForAi:
       'Entre na sua conta para a IA criar textos novos no seu nível e corrigir o que você escreve. Sem conta, o app usa textos prontos.',
   },
+  share: {
+    button: 'Compartilhar',
+    title: 'Compartilhar o English Fun',
+    hint: 'Envie o link para amigos que também estão aprendendo inglês.',
+    text: 'Estou praticando leitura e escrita em inglês com o English Fun. Experimente grátis:',
+    link: 'Link',
+    copy: 'Copiar link',
+    copied: 'Copiado',
+    email: 'E-mail',
+    more: 'Mais',
+  },
   practice: { aiBadge: 'IA', builtinBadge: 'Pronto', aiFailed: 'A IA teve um problema.', usingBuiltin: 'Usando um texto pronto.' },
   reading: {
     name: 'Leitura',

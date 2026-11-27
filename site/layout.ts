@@ -1,6 +1,7 @@
 import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
-import type { LucideIcon } from 'lucide-react'
+import { Link2, Mail, MessageCircle, MoreHorizontal, Send, Share2, type LucideIcon } from 'lucide-react'
+import { shareTargets, type ShareTarget } from '../src/share.ts'
 
 /**
  * Replaced by the Worker with the site's real address (SITE_URL, or the address the
@@ -33,6 +34,42 @@ export interface PageMeta {
   /** Structured data objects, each written as its own JSON-LD block. */
   schema?: object[]
   noindex?: boolean
+}
+
+const SHARE_TEXT = 'Luyện đọc, viết tiếng Anh và xây kho từ vựng của riêng bạn với English Fun:'
+
+const glyph = (id: ShareTarget['id']) =>
+  id === 'facebook'
+    ? '<span class="share-glyph" aria-hidden="true">f</span>'
+    : id === 'x'
+      ? '<span class="share-glyph" aria-hidden="true">X</span>'
+      : icon(id === 'whatsapp' ? MessageCircle : id === 'telegram' ? Send : Mail, 15)
+
+/**
+ * Share links for a page. They work without JavaScript; /share.js adds "Copy link" and,
+ * where the browser has it, the system share sheet (Zalo, Messenger and the rest on phones).
+ */
+export function shareLinks(path: string, text = SHARE_TEXT) {
+  const url = `${SITE}${path}`
+  const links = shareTargets(url, text)
+    .map(
+      (s) =>
+        `<a class="share-target ${s.id}" href="${esc(s.href)}"${s.id === 'email' ? '' : ' target="_blank" rel="noopener noreferrer"'}><span class="share-badge">${glyph(s.id)}</span>${s.label}</a>`,
+    )
+    .join('')
+  return `<div class="share-targets" data-share data-url="${esc(url)}" data-text="${esc(text)}">
+          <button type="button" class="share-target copy" data-share-copy hidden><span class="share-badge">${icon(Link2, 15)}</span><span data-label>Sao chép link</span></button>
+          ${links}
+          <button type="button" class="share-target more" data-share-native hidden><span class="share-badge">${icon(MoreHorizontal, 15)}</span>Khác</button>
+        </div>`
+}
+
+/** A "share this" box, e.g. under a blog post. */
+export function shareBox(path: string, title: string, text?: string) {
+  return `<section class="share-box">
+        <p class="share-box-title">${esc(title)}</p>
+        ${shareLinks(path, text)}
+      </section>`
 }
 
 const NAV = [
@@ -70,6 +107,7 @@ export function page(meta: PageMeta, body: string): string {
     <link href="${FONTS}" rel="stylesheet" />
     <link rel="stylesheet" href="/site.css" />
     ${ld}
+    <script src="/share.js" defer></script>
   </head>
   <body>
     <header class="nav">
@@ -79,6 +117,14 @@ export function page(meta: PageMeta, body: string): string {
           ${NAV.map((n) => `<a href="${n.href}"${meta.path.startsWith(n.href) ? ' aria-current="page"' : ''}>${n.label}</a>`).join('')}
         </nav>
         <div class="nav-cta">
+          <div class="share">
+            <button type="button" class="btn ghost share-trigger" data-share-open aria-expanded="false" aria-controls="share-pop" title="Chia sẻ trang này">${icon(Share2, 18)}<span class="hide-sm">Chia sẻ</span></button>
+            <div class="share-pop" id="share-pop" role="dialog" aria-label="Chia sẻ trang này" hidden>
+              <p class="share-box-title">Chia sẻ trang này</p>
+              <p class="muted small">Gửi cho bạn bè cũng đang học tiếng Anh.</p>
+              ${shareLinks(meta.path)}
+            </div>
+          </div>
           <a class="btn ghost hide-sm" href="/app/">Đăng nhập</a>
           <a class="btn primary" href="${TRY_URL}">Dùng thử</a>
         </div>
