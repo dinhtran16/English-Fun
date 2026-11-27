@@ -1,10 +1,11 @@
 /**
  * Username + password accounts.
  *
- *   POST /api/auth/signup   { username, password } -> { user } and a session cookie
- *   POST /api/auth/signin   { username, password } -> { user } and a session cookie
+ *   POST /api/auth/signup   { username, password, lang? } -> { user, lang } and a session cookie
+ *   POST /api/auth/signin   { username, password }        -> { user, lang } and a session cookie
  *   POST /api/auth/signout                          -> clears the session
- *   GET  /api/auth/me                               -> { user } or 401
+ *   GET  /api/auth/me                               -> { user, lang } or 401
+ *   POST /api/auth/settings { lang }                -> saves the learner's language
  *   GET  /api/auth/config                           -> { turnstileSiteKey } for the sign-up form
  *
  * Passwords are hashed with PBKDF2-SHA256 and a per-user salt. Sessions are random
@@ -13,6 +14,7 @@
  * Abuse protection: sign-in and sign-up are rate limited per IP, an account is locked for
  * 15 minutes after 10 wrong passwords, and sign-up asks for a Turnstile check when configured.
  */
+import { isLang } from '../src/i18n/languages'
 import { clientIp, ensureSchema, hit, json, peek, tooMany, type Env } from './http'
 
 export const COOKIE = 'ef_session'
@@ -72,6 +74,22 @@ function sessionCookie(request: Request, token: string, maxAge: number): string 
   return `${COOKIE}=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${maxAge}${secure}`
 }
 
+/** The learner's language, or null if they never chose one (accounts from before languages existed). */
+async function userLang(env: Env, username: string): Promise<string | null> {
+  const row = await env.DB.prepare('SELECT lang FROM user_settings WHERE username = ?')
+    .bind(username)
+    .first<{ lang: string | null }>()
+  return row?.lang ?? null
+}
+
+async function saveLang(env: Env, username: string, lang: string) {
+  await env.DB.prepare(
+    'INSERT INTO user_settings (username, lang) VALUES (?, ?) ON CONFLICT (username) DO UPDATE SET lang = excluded.lang',
+  )
+    .bind(username, lang)
+    .run()
+}
+
 async function startSession(request: Request, env: Env, username: string): Promise<Response> {
   const token = randomHex(32)
   const maxAge = SESSION_DAYS * 24 * 3600
@@ -80,7 +98,8 @@ async function startSession(request: Request, env: Env, username: string): Promi
     .run()
   // Opportunistic cleanup of expired sessions.
   await env.DB.prepare('DELETE FROM sessions WHERE expires_at < ?').bind(Date.now()).run()
-  return json({ user: username }, 200, { 'set-cookie': sessionCookie(request, token, maxAge) })
+  const lang = await userLang(env, username)
+  return json({ user: username, lang }, 200, { 'set-cookie': sessionCookie(request, token, maxAge) })
 }
 
 /** Returns the signed-in username, or null. */
@@ -99,10 +118,11 @@ interface Credentials {
   username: string
   password: string
   turnstileToken?: string
+  lang?: string
 }
 
 async function readCredentials(request: Request): Promise<Credentials | Response> {
-  let body: { username?: unknown; password?: unknown; turnstileToken?: unknown }
+  let body: { username?: unknown; password?: unknown; turnstileToken?: unknown; lang?: unknown }
   try {
     body = await request.json()
   } catch {
@@ -116,6 +136,7 @@ async function readCredentials(request: Request): Promise<Credentials | Response
     username: body.username.trim().toLowerCase(),
     password: body.password,
     turnstileToken: typeof body.turnstileToken === 'string' ? body.turnstileToken.slice(0, 2048) : undefined,
+    lang: isLang(body.lang) ? body.lang : undefined,
   }
 }
 
@@ -153,6 +174,7 @@ async function signup(request: Request, env: Env): Promise<Response> {
   await env.DB.prepare('INSERT INTO users (username, password_hash, salt, created_at) VALUES (?, ?, ?, ?)')
     .bind(username, await hashPassword(password, salt), salt, Date.now())
     .run()
+  if (creds.lang) await saveLang(env, username, creds.lang)
   return startSession(request, env, username)
 }
 
@@ -186,7 +208,7 @@ async function signout(request: Request, env: Env): Promise<Response> {
 export async function handleAuth(request: Request, env: Env, action: string): Promise<Response> {
   if (action === 'me' && request.method === 'GET') {
     const user = await currentUser(request, env)
-    return user ? json({ user }) : json({ error: 'not_signed_in' }, 401)
+    return user ? json({ user, lang: await userLang(env, user) }) : json({ error: 'not_signed_in' }, 401)
   }
   if (action === 'config' && request.method === 'GET') {
     return json({ turnstileSiteKey: env.TURNSTILE_SECRET_KEY ? (env.TURNSTILE_SITE_KEY ?? null) : null })
@@ -195,5 +217,13 @@ export async function handleAuth(request: Request, env: Env, action: string): Pr
   if (action === 'signup') return signup(request, env)
   if (action === 'signin') return signin(request, env)
   if (action === 'signout') return signout(request, env)
+  if (action === 'settings') {
+    const user = await currentUser(request, env)
+    if (!user) return json({ error: 'not_signed_in' }, 401)
+    const body = (await request.json().catch(() => ({}))) as { lang?: unknown }
+    if (!isLang(body.lang)) return json({ error: 'bad_lang' }, 400)
+    await saveLang(env, user, body.lang)
+    return json({ ok: true, lang: body.lang })
+  }
   return json({ error: 'not_found' }, 404)
 }

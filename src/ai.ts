@@ -1,3 +1,6 @@
+import { TOPICS } from './data/passages'
+import type { LangCode } from './i18n/languages'
+import type { Messages } from './i18n/locales/en'
 import type { Level, Passage, Topic, VocabWord } from './types'
 
 export interface Feedback {
@@ -8,18 +11,14 @@ export interface Feedback {
   wordNotes: { word: string; used: boolean; note: string }[]
 }
 
-const ERRORS: Record<string, string> = {
-  ai_not_configured: 'Chưa cài API key cho AI, đang dùng bài có sẵn.',
-  ai_bad_key: 'API key của AI không hợp lệ, đang dùng bài có sẵn.',
-  ai_no_balance: 'Tài khoản AI đã hết tiền, đang dùng bài có sẵn.',
-  ai_busy: 'AI đang quá tải, đang dùng bài có sẵn. Thử lại sau ít phút.',
-  daily_limit: 'Đã hết lượt dùng AI hôm nay, đang dùng bài có sẵn.',
-  new_user_limit: 'Tài khoản mới được dùng AI ít lượt trong ngày đầu và đã hết, đang dùng bài có sẵn.',
-  global_limit: 'Hôm nay ứng dụng đã hết lượt AI chung, đang dùng bài có sẵn. Mai thử lại nhé.',
-  not_signed_in: 'Đăng nhập để dùng bài do AI tạo.',
+/** Thrown when the AI can't be used; `code` is a key of `aiErrors` in the locale files. */
+export class AiUnavailable extends Error {
+  code: string
+  constructor(code: string) {
+    super(code)
+    this.code = code
+  }
 }
-
-export class AiUnavailable extends Error {}
 
 async function post<T>(path: string, body: unknown): Promise<T> {
   let res: Response
@@ -31,12 +30,12 @@ async function post<T>(path: string, body: unknown): Promise<T> {
       credentials: 'same-origin',
     })
   } catch {
-    throw new AiUnavailable('Không kết nối được máy chủ, đang dùng bài có sẵn.')
+    throw new AiUnavailable('network')
   }
   const isJson = res.headers.get('content-type')?.includes('application/json')
   const data = isJson ? await res.json() : null
   if (!res.ok || !data) {
-    throw new AiUnavailable(ERRORS[data?.error] ?? 'AI gặp lỗi, đang dùng bài có sẵn.')
+    throw new AiUnavailable(typeof data?.error === 'string' ? data.error : 'ai_failed')
   }
   return data as T
 }
@@ -47,28 +46,41 @@ export async function generatePassage(
   topic: Topic,
   mode: 'reading' | 'writing',
   level: Level,
+  lang: LangCode,
   targets: VocabWord[] = [],
 ): Promise<Passage> {
   const { passage } = await post<{ passage: Passage }>('passage', {
     topicId: topic.id,
-    topicName: topic.name,
+    topicName: TOPICS.find((t) => t.id === topic.id)?.name ?? topic.name,
     mode,
     level,
+    lang,
     targetWords: toTargets(targets),
   })
   return passage
 }
 
+/** `source` is the passage in the learner's language, which they translated into English. */
 export async function gradeTranslation(
   passage: Passage,
+  source: string,
   answer: string,
   targets: VocabWord[],
+  lang: LangCode,
 ): Promise<Feedback> {
   const { feedback } = await post<{ feedback: Feedback }>('grade', {
-    vi: passage.vi,
+    source,
+    lang,
     reference: passage.en,
     answer,
     targetWords: toTargets(targets),
   })
   return feedback
 }
+
+/** Why the AI passage couldn't be used, followed by "using a built-in passage". */
+export function fallbackNotice(t: Messages, err: unknown): string {
+  const reason = err instanceof AiUnavailable ? t.aiErrors[err.code] : undefined
+  return `${reason ?? t.practice.aiFailed} ${t.practice.usingBuiltin}`
+}
+

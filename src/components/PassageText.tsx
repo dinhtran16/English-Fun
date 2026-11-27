@@ -1,3 +1,4 @@
+import { useI18n } from '../i18n'
 import { normalizeWord } from '../storage'
 
 interface Props {
@@ -9,6 +10,7 @@ interface Props {
 
 /** Renders a passage where each word can be dragged to the word panel, or tapped to add it. */
 export function PassageText({ text, isKnown, isTarget, onPick }: Props) {
+  const { t } = useI18n()
   const tokens = text.split(/(\s+)/)
   return (
     <p className="passage">
@@ -28,7 +30,7 @@ export function PassageText({ text, isKnown, isTarget, onPick }: Props) {
               e.dataTransfer.effectAllowed = 'copy'
             }}
             onClick={() => onPick(word)}
-            title="Kéo vào bảng từ, hoặc bấm để thêm"
+            title={t.panel.dragTitle}
           >
             {tok}
           </span>

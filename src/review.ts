@@ -1,12 +1,9 @@
 import type { VocabWord } from './types'
 
-export type ReviewMode = 'flashcard' | 'write-en' | 'write-vi'
+export type ReviewMode = 'flashcard' | 'write-en' | 'write-meaning'
 
-export const REVIEW_MODES: { id: ReviewMode; name: string; hint: string }[] = [
-  { id: 'flashcard', name: 'Lật thẻ', hint: 'Xem từ, nhớ nghĩa rồi lật thẻ kiểm tra' },
-  { id: 'write-en', name: 'Viết tiếng Anh', hint: 'Xem nghĩa tiếng Việt, gõ từ tiếng Anh' },
-  { id: 'write-vi', name: 'Viết tiếng Việt', hint: 'Xem từ tiếng Anh, gõ nghĩa tiếng Việt' },
-]
+/** Names and hints are in the locale files (review.modes). */
+export const REVIEW_MODES: ReviewMode[] = ['flashcard', 'write-en', 'write-meaning']
 
 /** Missed words first, then never-reviewed, then the ones reviewed longest ago. */
 export function pickReviewWords(words: VocabWord[], count: number): VocabWord[] {
@@ -31,7 +28,7 @@ const clean = (s: string) =>
   s
     .normalize('NFC')
     .toLowerCase()
-    .replace(/[.!?"“”()[\]]/g, ' ')
+    .replace(/[.!?"“”()[\]。！？「」]/g, ' ')
     .replace(/\s+/g, ' ')
     .trim()
 
@@ -52,15 +49,15 @@ export function checkEnglish(answer: string, word: string): Verdict {
 }
 
 /**
- * Vietnamese answer: the saved meaning may list several senses ("hạn chót, thời hạn").
+ * Meaning in the learner's language: the saved meaning may list several senses ("hạn chót, thời hạn").
  * Right if the answer matches one of them (or one contains the other); "almost" if it
  * only matches once accents are ignored.
  */
-export function checkVietnamese(answer: string, meaning: string): Verdict {
+export function checkMeaning(answer: string, meaning: string): Verdict {
   const a = clean(answer)
   if (!a) return 'wrong'
   const options = clean(meaning)
-    .split(/[,;/]|\bhoặc\b/)
+    .split(/[,;/、，；|]| hoặc /)
     .map((o) => o.trim())
     .filter(Boolean)
   const matches = (x: string, y: string) =>

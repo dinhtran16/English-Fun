@@ -1,3 +1,5 @@
+import type { LangCode } from './i18n/languages'
+
 export type Skill = 'reading' | 'writing'
 
 export interface Topic {
@@ -11,7 +13,11 @@ export interface Passage {
   topicId: string
   title: string
   en: string
-  vi: string
+  /** Vietnamese translation (built-in passages, and AI passages made before other languages existed). */
+  vi?: string
+  /** Translation in the learner's language (AI passages). Built-in ones are looked up in the locale files. */
+  tr?: string
+  lang?: string
   source?: 'ai' | 'builtin'
 }
 
@@ -21,6 +27,8 @@ export type Level = 'A2' | 'B1' | 'B2' | 'C1'
 export interface PracticeSettings {
   aiEnabled: boolean
   level: Level
+  /** The learner's language, for translations and AI feedback. */
+  lang: LangCode
 }
 
 export interface VocabWord {

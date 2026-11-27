@@ -31,7 +31,17 @@ function loadTurnstile(): Promise<TurnstileApi> {
 }
 
 /** Cloudflare's "are you human" check. Calls onToken with a token, or '' when it expires. */
-export function Turnstile({ siteKey, onToken, resetKey }: { siteKey: string; onToken: (t: string) => void; resetKey: number }) {
+export function Turnstile({
+  siteKey,
+  onToken,
+  resetKey,
+  language,
+}: {
+  siteKey: string
+  onToken: (t: string) => void
+  resetKey: number
+  language: string
+}) {
   const box = useRef<HTMLDivElement>(null)
   const cb = useRef(onToken)
   useEffect(() => {
@@ -46,7 +56,7 @@ export function Turnstile({ siteKey, onToken, resetKey }: { siteKey: string; onT
         if (cancelled || !box.current) return
         id = t.render(box.current, {
           sitekey: siteKey,
-          language: 'vi',
+          language,
           callback: (token: string) => cb.current(token),
           'expired-callback': () => cb.current(''),
           'error-callback': () => cb.current(''),
@@ -57,7 +67,7 @@ export function Turnstile({ siteKey, onToken, resetKey }: { siteKey: string; onT
       cancelled = true
       if (id) window.turnstile?.remove(id)
     }
-  }, [siteKey, resetKey])
+  }, [siteKey, resetKey, language])
 
   return <div ref={box} className="turnstile" />
 }

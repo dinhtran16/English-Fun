@@ -1,6 +1,7 @@
 import { Loader2, MousePointerClick, Plus, Search, Volume2, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { lookupWord, speak } from '../dictionary'
+import { useI18n } from '../i18n'
 import type { VocabStore } from '../storage'
 import type { PendingWord } from './usePendingWords'
 
@@ -13,6 +14,7 @@ interface Props {
 }
 
 export function WordPanel({ pending, setPending, addPending: add, vocab, topicId }: Props) {
+  const { lang, t } = useI18n()
   const [over, setOver] = useState(false)
   const [typed, setTyped] = useState('')
 
@@ -21,17 +23,17 @@ export function WordPanel({ pending, setPending, addPending: add, vocab, topicId
     pending
       .filter((p) => p.status === 'loading')
       .forEach((p) => {
-        lookupWord(p.word).then((info) =>
+        lookupWord(p.word, lang ?? 'vi').then((info) =>
           setPending((prev) =>
             prev.map((x) =>
               x.word === p.word && x.status === 'loading'
-                ? { ...x, status: 'done', info, meaning: x.meaning || info.meaningVi || '' }
+                ? { ...x, status: 'done', info, meaning: x.meaning || info.meaning || '' }
                 : x,
             ),
           ),
         )
       })
-  }, [pending, setPending])
+  }, [pending, setPending, lang])
 
   const saveWord = (p: PendingWord) => {
     vocab.add({
@@ -61,8 +63,8 @@ export function WordPanel({ pending, setPending, addPending: add, vocab, topicId
       }}
     >
       <div className="panel-head">
-        <h3>Từ mới</h3>
-        {pending.length > 0 && <span className="small muted">{pending.length} từ</span>}
+        <h3>{t.panel.title}</h3>
+        {pending.length > 0 && <span className="small muted">{t.panel.count(pending.length)}</span>}
       </div>
       <form
         onSubmit={(e) => {
@@ -71,8 +73,8 @@ export function WordPanel({ pending, setPending, addPending: add, vocab, topicId
           setTyped('')
         }}
       >
-        <input value={typed} onChange={(e) => setTyped(e.target.value)} placeholder="Tra một từ..." />
-        <button type="submit" aria-label="Tra từ">
+        <input value={typed} onChange={(e) => setTyped(e.target.value)} placeholder={t.panel.lookupPlaceholder} />
+        <button type="submit" aria-label={t.panel.lookup}>
           <Search size={16} />
         </button>
       </form>
@@ -80,7 +82,7 @@ export function WordPanel({ pending, setPending, addPending: add, vocab, topicId
       {pending.length === 0 && (
         <div className="dropzone">
           <MousePointerClick size={20} />
-          Kéo hoặc bấm vào một từ trong bài để tra nghĩa và lưu vào kho
+          {t.panel.dropzone}
         </div>
       )}
 
@@ -93,14 +95,14 @@ export function WordPanel({ pending, setPending, addPending: add, vocab, topicId
                 {p.info?.phonetic && <span className="small muted">{p.info.phonetic}</span>}
               </span>
               <span className="row" style={{ gap: 0 }}>
-                <button className="icon" onClick={() => speak(p.word)} title="Nghe phát âm" aria-label="Nghe phát âm">
+                <button className="icon" onClick={() => speak(p.word)} title={t.panel.listen} aria-label={t.panel.listen}>
                   <Volume2 size={16} />
                 </button>
                 <button
                   className="icon"
                   onClick={() => setPending((prev) => prev.filter((x) => x.word !== p.word))}
-                  title="Bỏ"
-                  aria-label="Bỏ từ này"
+                  title={t.panel.remove}
+                  aria-label={t.panel.removeWord}
                 >
                   <X size={16} />
                 </button>
@@ -108,7 +110,7 @@ export function WordPanel({ pending, setPending, addPending: add, vocab, topicId
             </div>
             {p.status === 'loading' ? (
               <p className="small muted row">
-                <Loader2 size={14} className="spin" /> Đang tra từ...
+                <Loader2 size={14} className="spin" /> {t.panel.loading}
               </p>
             ) : (
               <>
@@ -119,8 +121,8 @@ export function WordPanel({ pending, setPending, addPending: add, vocab, topicId
                   </p>
                 )}
                 {p.info?.example && <p className="example">“{p.info.example}”</p>}
-                {!p.info?.definition && !p.info?.meaningVi && (
-                  <p className="small muted">Không tìm thấy nghĩa tự động, bạn hãy tự nhập.</p>
+                {!p.info?.definition && !p.info?.meaning && (
+                  <p className="small muted">{t.panel.notFound}</p>
                 )}
               </>
             )}
@@ -131,18 +133,18 @@ export function WordPanel({ pending, setPending, addPending: add, vocab, topicId
                   prev.map((x) => (x.word === p.word ? { ...x, meaning: e.target.value } : x)),
                 )
               }
-              placeholder="Nghĩa tiếng Việt"
-              aria-label={`Nghĩa tiếng Việt của ${p.word}`}
+              placeholder={t.panel.meaningPlaceholder}
+              aria-label={t.panel.meaningOf(p.word)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && p.meaning.trim()) saveWord(p)
               }}
             />
             <button className="primary" onClick={() => saveWord(p)} disabled={!p.meaning.trim()}>
               {vocab.has(p.word) ? (
-                'Cập nhật trong kho'
+                t.panel.update
               ) : (
                 <>
-                  <Plus size={16} /> Thêm vào kho
+                  <Plus size={16} /> {t.panel.add}
                 </>
               )}
             </button>

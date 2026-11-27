@@ -10,8 +10,8 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import { useMemo, useState } from 'react'
-import { TOPICS } from '../data/passages'
 import { speak } from '../dictionary'
+import { useI18n } from '../i18n'
 import { pickReviewWords, REVIEW_MODES, type ReviewMode } from '../review'
 import type { VocabStore } from '../storage'
 import type { VocabWord } from '../types'
@@ -23,12 +23,7 @@ interface Props {
 
 type Sort = 'newest' | 'least-reviewed' | 'most-missed' | 'az'
 
-const SORTS: { id: Sort; label: string }[] = [
-  { id: 'newest', label: 'Mới thêm' },
-  { id: 'least-reviewed', label: 'Ít ôn nhất' },
-  { id: 'most-missed', label: 'Hay sai' },
-  { id: 'az', label: 'A → Z' },
-]
+const SORTS: Sort[] = ['newest', 'least-reviewed', 'most-missed', 'az']
 
 const accuracy = (w: VocabWord) =>
   w.reviewCount ? (w.correctCount ?? 0) / w.reviewCount : 1
@@ -47,10 +42,11 @@ const SESSION_SIZES = [10, 20, 0] // 0 = all
 const MODE_ICONS: Record<ReviewMode, LucideIcon> = {
   flashcard: Layers,
   'write-en': Type,
-  'write-vi': Languages,
+  'write-meaning': Languages,
 }
 
 export function VocabView({ vocab }: Props) {
+  const { t } = useI18n()
   const [query, setQuery] = useState('')
   const [sort, setSort] = useState<Sort>('newest')
   const [open, setOpen] = useState<string | null>(null)
@@ -99,34 +95,34 @@ export function VocabView({ vocab }: Props) {
     <section className="main">
       <div className="page-head">
         <div>
-          <h1>Kho từ vựng</h1>
-          <p>Ôn tập thường xuyên để nhớ lâu. Từ trả lời sai sẽ được hỏi lại trước.</p>
+          <h1>{t.vocab.title}</h1>
+          <p>{t.vocab.subtitle}</p>
         </div>
       </div>
 
       {vocab.words.length === 0 ? (
         <div className="card empty">
           <Library size={28} />
-          <b>Chưa có từ nào</b>
-          <span>Vào phần Đọc hiểu, bấm vào từ chưa biết để lưu vào kho.</span>
+          <b>{t.vocab.emptyTitle}</b>
+          <span>{t.vocab.emptyText}</span>
         </div>
       ) : (
         <>
           <div className="stats">
             <div className="card stat">
-              <div className="label">Tổng số từ</div>
+              <div className="label">{t.vocab.total}</div>
               <div className="value">{vocab.words.length}</div>
             </div>
             <div className="card stat">
-              <div className="label">Đã thuộc</div>
+              <div className="label">{t.vocab.mastered}</div>
               <div className="value">{mastered}</div>
             </div>
             <div className="card stat">
-              <div className="label">Cần ôn lại</div>
+              <div className="label">{t.vocab.toReview}</div>
               <div className="value">{missedCount}</div>
             </div>
             <div className="card stat">
-              <div className="label">Lượt ôn tập</div>
+              <div className="label">{t.vocab.reviews}</div>
               <div className="value">{totalReviews}</div>
             </div>
           </div>
@@ -134,9 +130,9 @@ export function VocabView({ vocab }: Props) {
           <div className="section">
             <div className="row space" style={{ marginBottom: 10 }}>
               <span className="eyebrow" style={{ margin: 0 }}>
-                Ôn tập
+                {t.vocab.review}
               </span>
-              <div className="segmented" role="radiogroup" aria-label="Số từ mỗi lượt">
+              <div className="segmented" role="radiogroup" aria-label={t.vocab.sessionSize}>
                 {SESSION_SIZES.map((n) => (
                   <button
                     key={n}
@@ -145,41 +141,41 @@ export function VocabView({ vocab }: Props) {
                     role="radio"
                     aria-checked={size === n}
                   >
-                    {n ? `${n} từ` : 'Tất cả'}
+                    {n ? t.vocab.nWords(n) : t.vocab.all}
                   </button>
                 ))}
               </div>
             </div>
             <div className="mode-grid">
               {REVIEW_MODES.map((m) => {
-                const Icon = MODE_ICONS[m.id]
+                const Icon = MODE_ICONS[m]
                 return (
-                  <button key={m.id} className="mode-card" onClick={() => start(m.id)}>
+                  <button key={m} className="mode-card" onClick={() => start(m)}>
                     <span className="mode-icon">
                       <Icon size={18} />
                     </span>
-                    <span className="t">{m.name}</span>
-                    <span className="d">{m.hint}</span>
+                    <span className="t">{t.review.modes[m].name}</span>
+                    <span className="d">{t.review.modes[m].hint}</span>
                   </button>
                 )
               })}
             </div>
           </div>
 
-          <div className="eyebrow">Danh sách từ</div>
+          <div className="eyebrow">{t.vocab.list}</div>
           <div className="list-tools">
             <div className="search">
               <Search size={16} />
               <input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Tìm từ hoặc nghĩa..."
+                placeholder={t.vocab.search}
               />
             </div>
-            <select value={sort} onChange={(e) => setSort(e.target.value as Sort)} aria-label="Sắp xếp">
+            <select value={sort} onChange={(e) => setSort(e.target.value as Sort)} aria-label={t.vocab.sort}>
               {SORTS.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.label}
+                <option key={s} value={s}>
+                  {t.vocab.sorts[s]}
                 </option>
               ))}
             </select>
@@ -199,28 +195,28 @@ export function VocabView({ vocab }: Props) {
                         e.stopPropagation()
                         speak(w.word)
                       }}
-                      title="Nghe phát âm"
-                      aria-label={`Nghe ${w.word}`}
+                      title={t.panel.listen}
+                      aria-label={t.vocab.listenTo(w.word)}
                     >
                       <Volume2 size={15} />
                     </button>
                   </span>
                   <span className="m">{w.meaning}</span>
-                  <span className="st" title="Số lần ôn và tỉ lệ đúng">
-                    {w.lastResult === 'wrong' && <span className="dot-miss" title="Sai lần gần nhất" />}
+                  <span className="st" title={t.vocab.statsTitle}>
+                    {w.lastResult === 'wrong' && <span className="dot-miss" title={t.vocab.missedLast} />}
                     {w.reviewCount ? (
                       <>
-                        <span>{w.reviewCount} lần</span>
+                        <span>{t.vocab.times(w.reviewCount)}</span>
                         <Meter value={accuracy(w)} />
                       </>
                     ) : (
-                      <span>Chưa ôn</span>
+                      <span>{t.vocab.notReviewed}</span>
                     )}
                   </span>
                 </li>
               ),
             )}
-            {list.length === 0 && <li className="empty">Không tìm thấy từ phù hợp.</li>}
+            {list.length === 0 && <li className="empty">{t.vocab.noMatch}</li>}
           </ul>
         </>
       )}
@@ -229,46 +225,48 @@ export function VocabView({ vocab }: Props) {
 }
 
 function Meter({ value }: { value: number }) {
+  const { t } = useI18n()
   const cls = value < 0.5 ? 'low' : value < 0.8 ? 'mid' : ''
   return (
-    <span className={`meter ${cls}`} title={`Đúng ${Math.round(value * 100)}%`}>
+    <span className={`meter ${cls}`} title={t.vocab.accuracy(Math.round(value * 100))}>
       <i style={{ width: `${Math.max(6, value * 100)}%` }} />
     </span>
   )
 }
 
 function WordDetail({ w, vocab, onClose }: { w: VocabWord; vocab: VocabStore; onClose: () => void }) {
-  const topic = TOPICS.find((t) => t.id === w.topicId)
+  const { t } = useI18n()
+  const topicName = w.topicId ? t.topics[w.topicId] : undefined
   return (
     <li className="word-row open">
       <div className="row space">
         <span>
           <b className="big">{w.word}</b> {w.phonetic && <span className="muted">{w.phonetic}</span>}
-          <button className="icon" onClick={() => speak(w.word)} title="Nghe phát âm" aria-label="Nghe phát âm">
+          <button className="icon" onClick={() => speak(w.word)} title={t.panel.listen} aria-label={t.panel.listen}>
             <Volume2 size={15} />
           </button>
         </span>
-        <button className="icon" onClick={onClose} title="Thu gọn" aria-label="Thu gọn">
+        <button className="icon" onClick={onClose} title={t.vocab.collapse} aria-label={t.vocab.collapse}>
           <ChevronUp size={16} />
         </button>
       </div>
       <label className="field">
-        Nghĩa tiếng Việt
+        {t.vocab.meaning}
         <input
           value={w.meaning}
           onChange={(e) => vocab.update(w.word, { meaning: e.target.value })}
-          aria-label={`Nghĩa của ${w.word}`}
+          aria-label={t.panel.meaningOf(w.word)}
         />
       </label>
       {w.definition && <p className="def">{w.definition}</p>}
       {w.example && <p className="example">“{w.example}”</p>}
       <p className="small muted">
-        {topic && `${topic.name} · `}
-        Ôn {w.reviewCount ?? 0} lần, đúng {w.correctCount ?? 0} · Dùng trong bài viết {w.practiceCount} lần
+        {topicName && `${topicName} · `}
+        {t.vocab.details(w.reviewCount ?? 0, w.correctCount ?? 0, w.practiceCount)}
       </p>
       <div>
         <button className="small danger-text" onClick={() => vocab.remove(w.word)}>
-          <Trash2 size={14} /> Xóa từ này
+          <Trash2 size={14} /> {t.vocab.delete}
         </button>
       </div>
     </li>

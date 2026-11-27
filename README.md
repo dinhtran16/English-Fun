@@ -2,16 +2,25 @@
 
 Ứng dụng web luyện **đọc** và **viết** tiếng Anh cho người lớn, kết hợp xây dựng kho từ vựng cá nhân.
 
+## Ngôn ngữ của người học
+
+Người học chọn **ngôn ngữ của mình** trong 10 ngôn ngữ: Việt, Tây Ban Nha, Bồ Đào Nha, Pháp, Đức, Indonesia, Nhật, Hàn, Trung (giản thể), Hindi. Ngôn ngữ này dùng cho giao diện, nghĩa từ khi tra, bản dịch đoạn văn, đề bài ở màn Viết và lời nhận xét của AI.
+
+- Lần đầu vào app, ngôn ngữ được đoán theo trình duyệt; nếu trình duyệt dùng ngôn ngữ khác, app hiện màn chọn ngôn ngữ. Link từ các trang công khai (tiếng Việt) mở app bằng tiếng Việt (`?lang=vi`). Người đã dùng app trước đây giữ tiếng Việt.
+- Đổi bất cứ lúc nào ở góc trên (biểu tượng quả địa cầu). Khi đăng nhập, lựa chọn được lưu theo tài khoản (bảng `user_settings`, API `POST /api/auth/settings`) và áp dụng trên mọi thiết bị.
+- Chữ giao diện nằm ở `src/i18n/locales/<mã>.ts`, mỗi ngôn ngữ một file, kèm bản dịch 13 bài có sẵn. `en.ts` là bản gốc quy định các khóa; thêm ngôn ngữ mới = thêm một file và một dòng trong `src/i18n/languages.ts`.
+- Kho từ cũ giữ nguyên nghĩa đã lưu.
+
 ## Luồng sử dụng
 
 1. **Chọn chủ đề** (Công việc, Du lịch, Công nghệ, Sức khỏe, Đời sống) và **kỹ năng**.
 2. **Đọc**: app hiển thị một đoạn văn tiếng Anh ngẫu nhiên theo chủ đề.
    - Kéo từ bất kỳ vào **Bảng từ mới** (hoặc bấm vào từ, hoặc gõ từ).
-   - App tự tra nghĩa tiếng Anh, phiên âm, ví dụ và gợi ý nghĩa tiếng Việt. Bạn sửa nghĩa nếu cần rồi bấm **Thêm vào kho**.
+   - App tự tra nghĩa tiếng Anh, phiên âm, ví dụ và gợi ý nghĩa bằng ngôn ngữ của bạn. Bạn sửa nghĩa nếu cần rồi bấm **Thêm vào kho**.
    - Có thể viết bản dịch của riêng mình, và xem bản dịch tham khảo.
    - Từ đã có trong kho được gạch chân xanh.
 3. **Viết**: app chọn đoạn văn trong chủ đề có chứa nhiều từ trong kho của bạn nhất, và chọn tối đa 5 từ ít được luyện nhất làm **Từ cần dùng**.
-   - Dịch đoạn tiếng Việt sang tiếng Anh, rồi viết thêm vài câu dùng các từ còn thiếu.
+   - Dịch đoạn văn (bằng ngôn ngữ của bạn) sang tiếng Anh, rồi viết thêm vài câu dùng các từ còn thiếu.
    - Bấm **Kiểm tra** để xem đã dùng đủ từ chưa, so với bản gốc, và lưu thêm từ mới.
 4. **Kho từ**: tìm kiếm, sửa nghĩa, nghe phát âm, xóa, và ôn tập bằng thẻ lật.
 
@@ -77,6 +86,7 @@ npm run cf:dev   # build rồi chạy wrangler dev với D1 cục bộ, http://l
 | `worker/ai.ts`, `src/ai.ts` | Sinh đoạn văn và chấm bài bằng DeepSeek |
 | `src/auth.ts`, `src/components/AuthScreen.tsx` | Phía app: kiểm tra phiên và màn hình đăng nhập |
 | `wrangler.jsonc` | Cấu hình Worker, static assets và D1 |
+| `src/i18n/` | Ngôn ngữ người học: danh sách ngôn ngữ, chữ giao diện từng ngôn ngữ, bản dịch bài có sẵn |
 | `src/dictionary.ts` | Tra từ (dictionaryapi.dev, MyMemory) và phát âm (Web Speech API) |
 | `app/index.html` | Trang của app, chạy ở `/app/` |
 | `site/` | Trang công khai cho SEO: trang chủ, chủ đề từ vựng, blog, robots.txt, sitemap.xml |
