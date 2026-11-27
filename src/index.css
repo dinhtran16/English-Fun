@@ -287,6 +287,9 @@ main.container { padding-top: 28px; padding-bottom: 64px; }
 .pending-item { border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px; background: var(--surface); display: grid; gap: 8px; }
 .pending-item .word-title { display: flex; align-items: baseline; gap: 8px; }
 .pending-item .word-title b { font-size: 1.05rem; }
+.pending-item.saved { padding: 8px 8px 8px 12px; background: var(--surface-2); }
+.pending-item.saved .word-title { flex-wrap: wrap; gap: 4px 8px; min-width: 0; }
+.saved-mark { display: inline-flex; align-items: center; gap: 3px; color: var(--good); font-weight: 500; margin-right: 4px; white-space: nowrap; }
 .def { font-size: 0.88rem; color: var(--text-2); }
 .def em { color: var(--muted); font-style: normal; font-size: 0.8rem; margin-right: 4px; }
 .example { font-size: 0.85rem; color: var(--muted); font-style: italic; font-family: var(--serif); }

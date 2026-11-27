@@ -112,6 +112,9 @@ const pt: Messages = {
     update: 'Atualizar na lista',
     add: 'Adicionar à lista',
     dragTitle: 'Arraste para o painel ou toque para adicionar',
+    saved: 'Salva',
+    edit: 'Editar',
+    clearAll: 'Limpar tudo',
   },
   vocab: {
     title: 'Minhas palavras',

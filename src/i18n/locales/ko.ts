@@ -112,6 +112,9 @@ const ko: Messages = {
     update: '단어장에서 수정',
     add: '단어장에 추가',
     dragTitle: '패널로 끌어오거나 눌러서 추가',
+    saved: '저장됨',
+    edit: '수정',
+    clearAll: '모두 지우기',
   },
   vocab: {
     title: '단어장',

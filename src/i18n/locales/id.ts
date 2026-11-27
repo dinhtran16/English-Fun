@@ -112,6 +112,9 @@ const id: Messages = {
     update: 'Perbarui di daftar',
     add: 'Tambah ke daftar',
     dragTitle: 'Seret ke panel, atau ketuk untuk menambah',
+    saved: 'Tersimpan',
+    edit: 'Ubah',
+    clearAll: 'Hapus semua',
   },
   vocab: {
     title: 'Kosakataku',

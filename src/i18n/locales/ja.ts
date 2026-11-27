@@ -112,6 +112,9 @@ const ja: Messages = {
     update: '単語帳を更新',
     add: '単語帳に追加',
     dragTitle: 'パネルにドラッグ、またはタップして追加',
+    saved: '保存済み',
+    edit: '編集',
+    clearAll: 'すべて消去',
   },
   vocab: {
     title: '単語帳',

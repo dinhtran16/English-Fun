@@ -110,6 +110,9 @@ const zh: Messages = {
     update: '更新生词本',
     add: '加入生词本',
     dragTitle: '拖到面板，或点击添加',
+    saved: '已保存',
+    edit: '编辑',
+    clearAll: '全部清除',
   },
   vocab: {
     title: '生词本',

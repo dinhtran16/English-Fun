@@ -129,6 +129,9 @@ const vi: Messages = {
     update: 'Cập nhật trong kho',
     add: 'Thêm vào kho',
     dragTitle: 'Kéo vào bảng từ, hoặc bấm để thêm',
+    saved: 'Đã lưu',
+    edit: 'Sửa',
+    clearAll: 'Xoá hết',
   },
   vocab: {
     title: 'Kho từ vựng',
