@@ -48,7 +48,7 @@ export function WritingView({ topic, vocab, settings }: Props) {
   const started = useRef(exercise !== null)
   const [grading, setGrading] = useState(false)
   const [gradeError, setGradeError] = useState('')
-  const { pending, setPending, addPending } = usePendingWords()
+  const { pending, setPending, addPending } = usePendingWords(`${topic.id}:writing`)
 
   const show = useCallback(
     (r: { exercise: WritingExercise; notice: string }) => {

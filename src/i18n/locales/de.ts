@@ -112,6 +112,9 @@ const de: Messages = {
     update: 'In der Liste aktualisieren',
     add: 'Zur Liste hinzufügen',
     dragTitle: 'In die Leiste ziehen oder antippen',
+    saved: 'Gespeichert',
+    edit: 'Bearbeiten',
+    clearAll: 'Alle entfernen',
   },
   vocab: {
     title: 'Meine Wörter',

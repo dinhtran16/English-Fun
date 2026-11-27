@@ -112,6 +112,9 @@ const fr: Messages = {
     update: 'Mettre à jour dans la liste',
     add: 'Ajouter à la liste',
     dragTitle: 'Faites glisser vers le panneau ou touchez pour ajouter',
+    saved: 'Enregistré',
+    edit: 'Modifier',
+    clearAll: 'Tout effacer',
   },
   vocab: {
     title: 'Mes mots',

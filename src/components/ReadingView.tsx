@@ -34,7 +34,7 @@ export function ReadingView({ topic, vocab, settings }: Props) {
   const [translation, setTranslation] = useDraft('reading:translation', '')
   const [showRef, setShowRef] = useDraft('reading:showRef', false)
   const started = useRef(passage !== null)
-  const { pending, setPending, addPending } = usePendingWords()
+  const { pending, setPending, addPending } = usePendingWords(`${topic.id}:reading`)
 
   const load = useCallback(
     async (excludeId?: string) => {

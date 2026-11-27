@@ -133,6 +133,9 @@ const en = {
     update: 'Update in bank',
     add: 'Add to bank',
     dragTitle: 'Drag to the word panel, or tap to add',
+    saved: 'Saved',
+    edit: 'Edit',
+    clearAll: 'Clear all',
   },
   vocab: {
     title: 'Word bank',

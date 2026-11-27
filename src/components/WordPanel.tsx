@@ -1,4 +1,4 @@
-import { Loader2, MousePointerClick, Plus, Search, Volume2, X } from 'lucide-react'
+import { Check, Loader2, MousePointerClick, Pencil, Plus, Search, Volume2, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { lookupWord, speak } from '../dictionary'
 import { useI18n } from '../i18n'
@@ -44,8 +44,11 @@ export function WordPanel({ pending, setPending, addPending: add, vocab, topicId
       example: p.info?.example,
       topicId,
     })
-    setPending((prev) => prev.filter((x) => x.word !== p.word))
+    // Keep the word in the list, marked as saved, so the learner sees what they collected.
+    setPending((prev) => prev.map((x) => (x.word === p.word ? { ...x, saved: true } : x)))
   }
+
+  const remove = (word: string) => setPending((prev) => prev.filter((x) => x.word !== word))
 
   return (
     <aside
@@ -64,7 +67,14 @@ export function WordPanel({ pending, setPending, addPending: add, vocab, topicId
     >
       <div className="panel-head">
         <h3>{t.panel.title}</h3>
-        {pending.length > 0 && <span className="small muted">{t.panel.count(pending.length)}</span>}
+        {pending.length > 0 && (
+          <span className="row" style={{ gap: 4 }}>
+            <span className="small muted">{t.panel.count(pending.length)}</span>
+            <button className="link small" onClick={() => setPending([])}>
+              {t.panel.clearAll}
+            </button>
+          </span>
+        )}
       </div>
       <form
         onSubmit={(e) => {
@@ -87,7 +97,36 @@ export function WordPanel({ pending, setPending, addPending: add, vocab, topicId
       )}
 
       <ul className="pending">
-        {pending.map((p) => (
+        {pending.map((p) =>
+          p.saved ? (
+          <li key={p.word} className="pending-item saved">
+            <div className="row space">
+              <span className="word-title">
+                <b>{p.word}</b>
+                <span className="small muted">{p.meaning}</span>
+              </span>
+              <span className="row" style={{ gap: 0 }}>
+                <span className="saved-mark small" title={t.panel.saved}>
+                  <Check size={14} /> {t.panel.saved}
+                </span>
+                <button className="icon" onClick={() => speak(p.word)} title={t.panel.listen} aria-label={t.panel.listen}>
+                  <Volume2 size={16} />
+                </button>
+                <button
+                  className="icon"
+                  onClick={() => setPending((prev) => prev.map((x) => (x.word === p.word ? { ...x, saved: false } : x)))}
+                  title={t.panel.edit}
+                  aria-label={t.panel.edit}
+                >
+                  <Pencil size={15} />
+                </button>
+                <button className="icon" onClick={() => remove(p.word)} title={t.panel.remove} aria-label={t.panel.removeWord}>
+                  <X size={16} />
+                </button>
+              </span>
+            </div>
+          </li>
+          ) : (
           <li key={p.word} className="pending-item">
             <div className="row space">
               <span className="word-title">
@@ -100,7 +139,7 @@ export function WordPanel({ pending, setPending, addPending: add, vocab, topicId
                 </button>
                 <button
                   className="icon"
-                  onClick={() => setPending((prev) => prev.filter((x) => x.word !== p.word))}
+                  onClick={() => remove(p.word)}
                   title={t.panel.remove}
                   aria-label={t.panel.removeWord}
                 >
@@ -149,7 +188,8 @@ export function WordPanel({ pending, setPending, addPending: add, vocab, topicId
               )}
             </button>
           </li>
-        ))}
+          ),
+        )}
       </ul>
     </aside>
   )

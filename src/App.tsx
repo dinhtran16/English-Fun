@@ -12,6 +12,7 @@ import { TOPICS } from './data/passages'
 import { toneClass } from './topicIcons'
 import { useI18n, type LangCode } from './i18n'
 import { clearDrafts, useDraft } from './persist'
+import { PENDING_KEY } from './components/usePendingWords'
 import { useVocab, type SyncStatus } from './storage'
 import type { Level, PracticeSettings, Skill, Topic } from './types'
 
@@ -126,7 +127,7 @@ export default function App() {
     entry.current = { guest: false, topic: null, skill: null }
     setTopic(link.topic)
     if (link.skill) {
-      clearDrafts()
+      clearDrafts([PENDING_KEY])
       setSession({ topic: link.topic, skill: link.skill, key: Date.now() })
       setScreen({ name: 'practice' })
     }
@@ -159,7 +160,8 @@ export default function App() {
 
   const start = (skill: Skill) => {
     if (!topic) return
-    clearDrafts()
+    // The word list stays while the topic and skill stay the same (see usePendingWords).
+    clearDrafts([PENDING_KEY])
     setSession({ topic, skill, key: Date.now() })
     setScreen({ name: 'practice' })
   }

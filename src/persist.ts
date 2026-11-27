@@ -25,10 +25,11 @@ export function saveDraft(key: string, value: unknown) {
   }
 }
 
-export function clearDrafts() {
+/** Clears every draft except the keys in `keep`. */
+export function clearDrafts(keep: string[] = []) {
   try {
     Object.keys(localStorage)
-      .filter((k) => k.startsWith(PREFIX))
+      .filter((k) => k.startsWith(PREFIX) && !keep.includes(k.slice(PREFIX.length)))
       .forEach((k) => localStorage.removeItem(k))
   } catch {
     // ignore
