@@ -1,7 +1,8 @@
 import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
-import { Link2, Mail, MessageCircle, MoreHorizontal, Send, Share2, type LucideIcon } from 'lucide-react'
+import { Globe, Link2, Mail, MessageCircle, MoreHorizontal, Send, Share2, type LucideIcon } from 'lucide-react'
 import { shareTargets, type ShareTarget } from '../src/share.ts'
+import { HOMES, homePath, tryUrl, VI, type HomeCopy } from './content/home.ts'
 
 /**
  * Replaced by the Worker with the site's real address (SITE_URL, or the address the
@@ -34,9 +35,11 @@ export interface PageMeta {
   /** Structured data objects, each written as its own JSON-LD block. */
   schema?: object[]
   noindex?: boolean
+  /** Language of the page; Vietnamese when left out. */
+  home?: HomeCopy
+  /** True on the home pages, which exist in every language and link to each other (hreflang). */
+  translated?: boolean
 }
-
-const SHARE_TEXT = 'Luyện đọc, viết tiếng Anh và xây kho từ vựng của riêng bạn với English Fun:'
 
 const glyph = (id: ShareTarget['id']) =>
   id === 'facebook'
@@ -49,7 +52,7 @@ const glyph = (id: ShareTarget['id']) =>
  * Share links for a page. They work without JavaScript; /share.js adds "Copy link" and,
  * where the browser has it, the system share sheet (Zalo, Messenger and the rest on phones).
  */
-export function shareLinks(path: string, text = SHARE_TEXT) {
+export function shareLinks(path: string, text = VI.chrome.shareText, c = VI.chrome) {
   const url = `${SITE}${path}`
   const links = shareTargets(url, text)
     .map(
@@ -57,41 +60,79 @@ export function shareLinks(path: string, text = SHARE_TEXT) {
         `<a class="share-target ${s.id}" href="${esc(s.href)}"${s.id === 'email' ? '' : ' target="_blank" rel="noopener noreferrer"'}><span class="share-badge">${glyph(s.id)}</span>${s.label}</a>`,
     )
     .join('')
-  return `<div class="share-targets" data-share data-url="${esc(url)}" data-text="${esc(text)}">
-          <button type="button" class="share-target copy" data-share-copy hidden><span class="share-badge">${icon(Link2, 15)}</span><span data-label>Sao chép link</span></button>
+  return `<div class="share-targets" data-share data-url="${esc(url)}" data-text="${esc(text)}" data-copied="${esc(c.copied)}">
+          <button type="button" class="share-target copy" data-share-copy hidden><span class="share-badge">${icon(Link2, 15)}</span><span data-label>${esc(c.copyLink)}</span></button>
           ${links}
-          <button type="button" class="share-target more" data-share-native hidden><span class="share-badge">${icon(MoreHorizontal, 15)}</span>Khác</button>
+          <button type="button" class="share-target more" data-share-native hidden><span class="share-badge">${icon(MoreHorizontal, 15)}</span>${esc(c.more)}</button>
         </div>`
 }
 
 /** A "share this" box, e.g. under a blog post. */
-export function shareBox(path: string, title: string, text?: string) {
+export function shareBox(path: string, title: string, text?: string, c = VI.chrome) {
   return `<section class="share-box">
         <p class="share-box-title">${esc(title)}</p>
-        ${shareLinks(path, text)}
+        ${shareLinks(path, text ?? c.shareText, c)}
       </section>`
 }
 
-const NAV = [
-  { href: '/chu-de', label: 'Chủ đề từ vựng' },
-  { href: '/blog', label: 'Blog' },
-]
+/** Nav links: the Vietnamese topic pages and blog, or sections of the home page in other languages. */
+function navLinks(h: HomeCopy) {
+  const c = h.chrome
+  return h.code === 'vi'
+    ? [
+        { href: '/chu-de', label: c.topics },
+        { href: '/blog', label: c.blog },
+      ]
+    : [
+        { href: `${homePath(h)}#topics`, label: c.topics },
+        { href: `${homePath(h)}#faq`, label: c.faq },
+      ]
+}
+
+/**
+ * Language menu. Works without JavaScript (<details>); /lang.js remembers the choice and,
+ * on a home page, offers the visitor's own language when it differs from the page's.
+ */
+function languageMenu(h: HomeCopy) {
+  return `<details class="lang-menu" data-lang-menu>
+            <summary class="btn ghost" title="${esc(h.chrome.language)}" aria-label="${esc(h.chrome.language)}: ${esc(h.label)}">${icon(Globe, 18)}<span class="lang-code">${h.code.toUpperCase()}</span></summary>
+            <ul class="lang-list">
+              ${HOMES.map(
+                (o) =>
+                  `<li><a href="${homePath(o)}" hreflang="${o.hreflang}" lang="${o.hreflang}" data-lang="${o.code}" data-suggest="${esc(o.suggest)}"${o.code === h.code ? ' aria-current="true"' : ''}>${esc(o.label)}</a></li>`,
+              ).join('\n              ')}
+            </ul>
+          </details>`
+}
 
 export function page(meta: PageMeta, body: string): string {
-  const url = `${SITE}${meta.path === '/' ? '/' : meta.path}`
+  const h = meta.home ?? VI
+  const c = h.chrome
+  const home = homePath(h)
+  const tryHref = tryUrl(h)
+  const url = `${SITE}${meta.path}`
   const ld = (meta.schema ?? [])
     .map((s) => `<script type="application/ld+json">${JSON.stringify(s).replace(/</g, '\\u003c')}</script>`)
     .join('\n    ')
+  const alternates = meta.translated
+    ? [
+        ...HOMES.map((o) => `<link rel="alternate" hreflang="${o.hreflang}" href="${SITE}${homePath(o)}" />`),
+        `<link rel="alternate" hreflang="x-default" href="${SITE}/en/" />`,
+        ...HOMES.filter((o) => o.code !== h.code).map((o) => `<meta property="og:locale:alternate" content="${o.ogLocale}" />`),
+      ].join('\n    ')
+    : ''
+  const nav = navLinks(h)
   return `<!doctype html>
-<html lang="vi">
+<html lang="${h.hreflang}"${meta.translated ? ' data-home' : ''}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>${esc(meta.title)}</title>
     <meta name="description" content="${esc(meta.description)}" />
     ${meta.noindex ? '<meta name="robots" content="noindex" />' : `<link rel="canonical" href="${url}" />`}
+    ${alternates}
     <meta property="og:site_name" content="${SITE_NAME}" />
-    <meta property="og:locale" content="vi_VN" />
+    <meta property="og:locale" content="${h.ogLocale}" />
     <meta property="og:type" content="${meta.ogType ?? 'website'}" />
     <meta property="og:title" content="${esc(meta.title)}" />
     <meta property="og:description" content="${esc(meta.description)}" />
@@ -108,25 +149,33 @@ export function page(meta: PageMeta, body: string): string {
     <link rel="stylesheet" href="/site.css" />
     ${ld}
     <script src="/share.js" defer></script>
+    <script src="/lang.js" defer></script>
   </head>
   <body>
+    <div class="lang-suggest" data-lang-suggest hidden>
+      <div class="wrap lang-suggest-inner">
+        ${icon(Globe, 16)}<a href="/" data-lang-suggest-link></a>
+        <button type="button" class="lang-suggest-close" data-lang-suggest-close aria-label="${esc(c.close)}">&times;</button>
+      </div>
+    </div>
     <header class="nav">
       <div class="wrap nav-inner">
-        <a class="brand" href="/"><span class="logo-mark">E</span><span>${SITE_NAME}</span></a>
-        <nav class="nav-links" aria-label="Điều hướng chính">
-          ${NAV.map((n) => `<a href="${n.href}"${meta.path.startsWith(n.href) ? ' aria-current="page"' : ''}>${n.label}</a>`).join('')}
+        <a class="brand" href="${home}"><span class="logo-mark">E</span><span>${SITE_NAME}</span></a>
+        <nav class="nav-links" aria-label="${esc(c.mainNav)}">
+          ${nav.map((n) => `<a href="${n.href}"${h.code === 'vi' && meta.path.startsWith(n.href) ? ' aria-current="page"' : ''}>${esc(n.label)}</a>`).join('')}
         </nav>
         <div class="nav-cta">
+          ${languageMenu(h)}
           <div class="share">
-            <button type="button" class="btn ghost share-trigger" data-share-open aria-expanded="false" aria-controls="share-pop" title="Chia sẻ trang này">${icon(Share2, 18)}<span class="hide-sm">Chia sẻ</span></button>
-            <div class="share-pop" id="share-pop" role="dialog" aria-label="Chia sẻ trang này" hidden>
-              <p class="share-box-title">Chia sẻ trang này</p>
-              <p class="muted small">Gửi cho bạn bè cũng đang học tiếng Anh.</p>
-              ${shareLinks(meta.path)}
+            <button type="button" class="btn ghost share-trigger" data-share-open aria-expanded="false" aria-controls="share-pop" title="${esc(c.shareTitle)}">${icon(Share2, 18)}<span class="hide-sm">${esc(c.share)}</span></button>
+            <div class="share-pop" id="share-pop" role="dialog" aria-label="${esc(c.shareTitle)}" hidden>
+              <p class="share-box-title">${esc(c.shareTitle)}</p>
+              <p class="muted small">${esc(c.shareHint)}</p>
+              ${shareLinks(meta.path, c.shareText, c)}
             </div>
           </div>
-          <a class="btn ghost hide-sm" href="/app/">Đăng nhập</a>
-          <a class="btn primary" href="${TRY_URL}">Dùng thử</a>
+          <a class="btn ghost hide-sm" href="/app/">${esc(c.signIn)}</a>
+          <a class="btn primary" href="${tryHref}">${esc(c.try)}</a>
         </div>
       </div>
     </header>
@@ -136,14 +185,16 @@ ${body}
     <footer class="footer">
       <div class="wrap footer-inner">
         <div>
-          <a class="brand" href="/"><span class="logo-mark">E</span><span>${SITE_NAME}</span></a>
-          <p class="muted">Luyện đọc, viết tiếng Anh và xây kho từ vựng của riêng bạn.</p>
+          <a class="brand" href="${home}"><span class="logo-mark">E</span><span>${SITE_NAME}</span></a>
+          <p class="muted">${esc(c.tagline)}</p>
         </div>
-        <nav class="footer-links" aria-label="Liên kết cuối trang">
-          <a href="/chu-de">Chủ đề từ vựng</a>
-          <a href="/blog">Blog</a>
-          <a href="${TRY_URL}">Dùng thử</a>
-          <a href="/app/">Đăng nhập</a>
+        <nav class="footer-links" aria-label="${esc(c.footerNav)}">
+          ${nav.map((n) => `<a href="${n.href}">${esc(n.label)}</a>`).join('\n          ')}
+          <a href="${tryHref}">${esc(c.try)}</a>
+          <a href="/app/">${esc(c.signIn)}</a>
+        </nav>
+        <nav class="footer-langs" aria-label="${esc(c.language)}">
+          ${HOMES.map((o) => `<a href="${homePath(o)}" hreflang="${o.hreflang}" lang="${o.hreflang}" data-lang="${o.code}">${esc(o.label)}</a>`).join('\n          ')}
         </nav>
       </div>
     </footer>
@@ -172,7 +223,7 @@ export function breadcrumbs(items: { name: string; path: string }[]) {
   return { html, schema }
 }
 
-export function cta(title: string, text: string, href = TRY_URL, label = 'Dùng thử miễn phí') {
+export function cta(title: string, text: string, href = TRY_URL, label = VI.tryFree) {
   return `<section class="cta">
         <div>
           <h2>${title}</h2>
